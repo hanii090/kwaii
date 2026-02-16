@@ -11,23 +11,36 @@ import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react-native';
 import { format, addMonths, subMonths } from 'date-fns';
 import { Colors, Spacing, BorderRadius, Shadows } from '../src/constants/theme';
+import { CheckIcon } from '../src/components/icons/KawaiiIcons';
 import { useMedicationStore } from '../src/stores/medicationStore';
 import CalendarGrid, { type DayStatus } from '../src/components/CalendarGrid';
 
 export default function CalendarScreen() {
-  const { medications } = useMedicationStore();
+  const { medications, history } = useMedicationStore();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  // Build day statuses from medications
+  // Build day statuses from persisted history + today's live data
   const dayStatuses = useMemo<DayStatus[]>(() => {
     const today = format(new Date(), 'yyyy-MM-dd');
-    // For now, show today's data only (history tracking will expand this)
+    const statuses: DayStatus[] = [];
+
+    // Add all history entries
+    for (const h of history) {
+      if (h.date !== today) {
+        statuses.push({ date: h.date, total: h.total, taken: h.taken });
+      }
+    }
+
+    // Add today's live data
     const total = medications.length;
     const taken = medications.filter((m) => m.taken).length;
-    if (total === 0) return [];
-    return [{ date: today, total, taken }];
-  }, [medications]);
+    if (total > 0) {
+      statuses.push({ date: today, total, taken });
+    }
+
+    return statuses;
+  }, [medications, history]);
 
   const selectedDayKey = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
   const selectedStatus = dayStatuses.find((d) => d.date === selectedDayKey);
@@ -111,15 +124,33 @@ export default function CalendarScreen() {
                 <Text style={styles.detailSummary}>
                   {selectedStatus.taken}/{selectedStatus.total} medications taken
                 </Text>
-                {medications.map((med) => (
-                  <View key={med.id} style={styles.detailMedRow}>
-                    <Text style={styles.detailMedIcon}>{med.icon || '💊'}</Text>
-                    <Text style={styles.detailMedName}>{med.name}</Text>
-                    <Text style={styles.detailMedStatus}>
-                      {med.taken ? '✅' : '⬜'}
-                    </Text>
-                  </View>
-                ))}
+                {(() => {
+                  const today = format(new Date(), 'yyyy-MM-dd');
+                  if (selectedDayKey === today) {
+                    return medications.map((med) => (
+                      <View key={med.id} style={styles.detailMedRow}>
+                        <Text style={styles.detailMedIcon}>{med.icon || '💊'}</Text>
+                        <Text style={styles.detailMedName}>{med.name}</Text>
+                        <View style={styles.detailMedStatus}>
+                          {med.taken ? <CheckIcon size={18} color="#4CAF50" /> : <View style={styles.uncheckedBox} />}
+                        </View>
+                      </View>
+                    ));
+                  }
+                  const historyEntry = history.find((h) => h.date === selectedDayKey);
+                  if (historyEntry) {
+                    return historyEntry.medications.map((med) => (
+                      <View key={med.id} style={styles.detailMedRow}>
+                        <Text style={styles.detailMedIcon}>{med.icon || '💊'}</Text>
+                        <Text style={styles.detailMedName}>{med.name}</Text>
+                        <View style={styles.detailMedStatus}>
+                          {med.taken ? <CheckIcon size={18} color="#4CAF50" /> : <View style={styles.uncheckedBox} />}
+                        </View>
+                      </View>
+                    ));
+                  }
+                  return null;
+                })()}
               </View>
             ) : (
               <Text style={styles.detailEmpty}>No medications scheduled.</Text>
@@ -257,7 +288,15 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   detailMedStatus: {
-    fontSize: 16,
+    width: 24,
+    alignItems: 'center' as const,
+  },
+  uncheckedBox: {
+    width: 16,
+    height: 16,
+    borderRadius: 3,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
   },
   detailEmpty: {
     fontSize: 14,

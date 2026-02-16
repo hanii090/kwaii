@@ -7,17 +7,25 @@ const PREMIUM_CACHE_KEY = '@kawaii_premium_status';
 interface PremiumStore {
   isPremium: boolean;
   isLoading: boolean;
+  isTestMode: boolean;
+  showFallbackPaywall: boolean;
 
   // Actions
   initialize: () => Promise<void>;
-  purchase: () => Promise<boolean>;
+  presentPaywall: () => Promise<boolean>;
+  presentPaywallIfNeeded: () => Promise<boolean>;
+  presentCustomerCenter: () => Promise<void>;
   restore: () => Promise<boolean>;
   setPremium: (value: boolean) => void;
+  toggleTestPremium: () => void;
+  setShowFallbackPaywall: (value: boolean) => void;
 }
 
 export const usePremiumStore = create<PremiumStore>((set, get) => ({
   isPremium: false,
   isLoading: true,
+  isTestMode: false,
+  showFallbackPaywall: false,
 
   initialize: async () => {
     try {
@@ -45,10 +53,10 @@ export const usePremiumStore = create<PremiumStore>((set, get) => ({
     }
   },
 
-  purchase: async () => {
+  presentPaywall: async () => {
     try {
       set({ isLoading: true });
-      const success = await PurchaseService.purchasePremium();
+      const success = await PurchaseService.presentPaywall();
       if (success) {
         set({ isPremium: true, isLoading: false });
         await AsyncStorage.setItem(PREMIUM_CACHE_KEY, 'true');
@@ -57,8 +65,34 @@ export const usePremiumStore = create<PremiumStore>((set, get) => ({
       }
       return success;
     } catch {
-      set({ isLoading: false });
+      // RevenueCat UI not available (e.g. Expo Go) — show fallback paywall
+      set({ isLoading: false, showFallbackPaywall: true });
       return false;
+    }
+  },
+
+  presentPaywallIfNeeded: async () => {
+    try {
+      const success = await PurchaseService.presentPaywallIfNeeded();
+      if (success) {
+        set({ isPremium: true });
+        await AsyncStorage.setItem(PREMIUM_CACHE_KEY, 'true');
+      }
+      return success;
+    } catch {
+      return false;
+    }
+  },
+
+  presentCustomerCenter: async () => {
+    try {
+      await PurchaseService.presentCustomerCenter();
+      // Re-check premium status after Customer Center closes
+      const isPremium = await PurchaseService.checkPremiumStatus();
+      set({ isPremium });
+      await AsyncStorage.setItem(PREMIUM_CACHE_KEY, isPremium ? 'true' : 'false');
+    } catch {
+      // Silently fail
     }
   },
 
@@ -78,5 +112,15 @@ export const usePremiumStore = create<PremiumStore>((set, get) => ({
   setPremium: (value) => {
     set({ isPremium: value });
     AsyncStorage.setItem(PREMIUM_CACHE_KEY, value ? 'true' : 'false');
+  },
+
+  toggleTestPremium: () => {
+    const current = get().isPremium;
+    set({ isPremium: !current, isTestMode: true });
+    AsyncStorage.setItem(PREMIUM_CACHE_KEY, !current ? 'true' : 'false');
+  },
+
+  setShowFallbackPaywall: (value) => {
+    set({ showFallbackPaywall: value });
   },
 }));

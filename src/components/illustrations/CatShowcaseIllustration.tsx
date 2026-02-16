@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { Colors, Spacing, BorderRadius, Shadows } from '../../constants/theme';
+import { SparkleIcon, HeartIcon, PawIcon } from '../icons/KawaiiIcons';
 
 const snowballImage = require('../../../assets/images/snowball.webp');
 const cloudImage = require('../../../assets/images/cloud.webp');
@@ -62,10 +63,18 @@ export default function CatShowcaseIllustration({
       </View>
 
       {/* Sparkle decorations */}
-      <Text style={[styles.sparkle, { top: 5, left: 20 }]}>✨</Text>
-      <Text style={[styles.sparkle, { top: 10, right: 25 }]}>💛</Text>
-      <Text style={[styles.sparkle, { bottom: 15, left: 15 }]}>🐾</Text>
-      <Text style={[styles.sparkle, { bottom: 10, right: 20 }]}>✨</Text>
+      <View style={[styles.sparkle, { top: 5, left: 20 }]}>
+        <SparkleIcon size={16} />
+      </View>
+      <View style={[styles.sparkle, { top: 10, right: 25 }]}>
+        <HeartIcon size={16} color="#FFD4A8" />
+      </View>
+      <View style={[styles.sparkle, { bottom: 15, left: 15 }]}>
+        <PawIcon size={16} />
+      </View>
+      <View style={[styles.sparkle, { bottom: 10, right: 20 }]}>
+        <SparkleIcon size={16} />
+      </View>
     </View>
   );
 }

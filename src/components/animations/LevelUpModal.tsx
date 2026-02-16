@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors, BorderRadius, Spacing, Shadows } from '../../constants/theme';
+import { CrownIcon, CoinIcon, StarIcon, SparkleIcon, CelebrationIcon } from '../icons/KawaiiIcons';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -18,17 +19,17 @@ interface Star {
   y: number;
   delay: number;
   size: number;
-  emoji: string;
+  iconType: 'star' | 'sparkle' | 'celebration';
 }
 
 function generateStars(count: number): Star[] {
-  const emojis = ['⭐', '✨', '🌟', '💫', '🎉', '🎊'];
+  const iconTypes = ['star', 'sparkle', 'star', 'sparkle', 'celebration', 'celebration'] as const;
   return Array.from({ length: count }, () => ({
     x: Math.random() * SCREEN_WIDTH,
     y: Math.random() * SCREEN_HEIGHT * 0.6,
     delay: Math.random() * 1500,
     size: 16 + Math.random() * 20,
-    emoji: emojis[Math.floor(Math.random() * emojis.length)],
+    iconType: iconTypes[Math.floor(Math.random() * iconTypes.length)],
   }));
 }
 
@@ -58,7 +59,7 @@ function AnimatedStar({ star }: { star: Star }) {
 
   return (
     <Animated.View style={{ position: 'absolute', left: star.x, top: star.y, opacity, transform: [{ scale }] }}>
-      <Text style={{ fontSize: star.size }}>{star.emoji}</Text>
+      {star.iconType === 'star' ? <StarIcon size={star.size} /> : star.iconType === 'sparkle' ? <SparkleIcon size={star.size} /> : <CelebrationIcon size={star.size} />}
     </Animated.View>
   );
 }
@@ -133,7 +134,7 @@ export default function LevelUpModal({ visible, oldLevel, newLevel, bonusCoins, 
         ))}
 
         <Animated.View style={[styles.card, { opacity: cardOpacity, transform: [{ scale: cardScale }] }]}>
-          <Text style={styles.crown}>👑</Text>
+          <CrownIcon size={48} />
           <Text style={styles.levelUpText}>Level Up!</Text>
 
           <Animated.View style={{ transform: [{ scale: levelScale }] }}>
@@ -145,7 +146,7 @@ export default function LevelUpModal({ visible, oldLevel, newLevel, bonusCoins, 
           <Text style={styles.levelSubtext}>Level {oldLevel} → Level {newLevel}</Text>
 
           <Animated.View style={[styles.coinsRow, { opacity: coinsOpacity }]}>
-            <Text style={styles.coinsEmoji}>🪙</Text>
+            <CoinIcon size={22} />
             <Text style={styles.coinsText}>+{bonusCoins} Bonus Coins!</Text>
           </Animated.View>
 
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH * 0.82, backgroundColor: Colors.white,
     borderRadius: BorderRadius.xxl, padding: Spacing.xl, alignItems: 'center', ...Shadows.large,
   },
-  crown: { fontSize: 48, marginBottom: Spacing.sm },
+  crown: { marginBottom: Spacing.sm, alignItems: 'center' as const },
   levelUpText: {
     fontSize: 32, fontWeight: '800', color: Colors.warm, marginBottom: Spacing.md,
     textShadowColor: 'rgba(244,162,97,0.3)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8,

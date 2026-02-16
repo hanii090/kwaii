@@ -11,10 +11,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, BorderRadius, Shadows } from '../../src/constants/theme';
 import { useCatStore } from '../../src/stores/catStore';
+import { usePremiumStore } from '../../src/stores/premiumStore';
 import { SHOP_CATS } from '../../src/data/shopItems';
 import type { ShopCatItem } from '../../src/types';
 import CatIllustration from '../../src/components/CatIllustration';
+import AnimatedCat from '../../src/components/AnimatedCat';
+import Sparkles from '../../src/components/animations/Sparkles';
+import CatConfetti from '../../src/components/animations/CatConfetti';
 import CatPurchaseAnimation from '../../src/components/animations/CatPurchaseAnimation';
+import PaywallModal from '../../src/components/modals/PaywallModal';
+import { CrownIcon, CoinIcon, SparkleIcon } from '../../src/components/icons/KawaiiIcons';
 
 const RARITY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   common: { bg: '#E8F5E9', text: '#388E3C', border: '#A5D6A7' },
@@ -27,10 +33,20 @@ const sortedCats = [...SHOP_CATS].sort((a, b) => a.price - b.price);
 
 export default function ShopScreen() {
   const { coins, cats, purchaseCat } = useCatStore();
+  const {
+    isPremium,
+    isLoading: premiumLoading,
+    presentPaywall,
+    restore,
+    showFallbackPaywall,
+    setShowFallbackPaywall,
+    setPremium,
+  } = usePremiumStore();
   const [purchaseAnim, setPurchaseAnim] = useState<{ visible: boolean; catName: string }>({
     visible: false,
     catName: '',
   });
+  const [purchasingCatId, setPurchasingCatId] = useState<string | null>(null);
 
   const ownedCatIds = cats.map((c) => c.id);
 
@@ -40,8 +56,43 @@ export default function ShopScreen() {
 
     if (item.price === 0) return;
 
+    // Premium users get all cats for free
+    if (isPremium) {
+      Alert.alert(`Claim ${item.name}?`, 'Premium perk — this cat is free for you!', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Claim',
+          onPress: () => {
+            const success = purchaseCat(item.id, item.breed, item.name, 0);
+            if (success) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              setPurchasingCatId(item.id);
+              setPurchaseAnim({ visible: true, catName: item.name });
+              setTimeout(() => setPurchasingCatId(null), 2000);
+            }
+          },
+        },
+      ]);
+      return;
+    }
+
     if (coins < item.price) {
-      Alert.alert('Not Enough Coins', `You need ${item.price - coins} more coins to buy ${item.name}.`);
+      Alert.alert(
+        'Not Enough Coins',
+        `You need ${item.price - coins} more coins to buy ${item.name}.`,
+        [
+          { text: 'Keep Earning', style: 'cancel' },
+          {
+            text: 'Unlock Premium',
+            onPress: async () => {
+              const success = await presentPaywall();
+              if (success) {
+                Alert.alert('Welcome to Premium! 👑', 'All cats are now free to claim!');
+              }
+            },
+          },
+        ]
+      );
       return;
     }
 
@@ -53,16 +104,19 @@ export default function ShopScreen() {
           const success = purchaseCat(item.id, item.breed, item.name, item.price);
           if (success) {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            setPurchasingCatId(item.id);
             setPurchaseAnim({ visible: true, catName: item.name });
+            setTimeout(() => setPurchasingCatId(null), 2000);
           }
         },
       },
     ]);
   };
 
+
   const renderCatCard = ({ item }: { item: ShopCatItem }) => {
     const isOwned = ownedCatIds.includes(item.id);
-    const canAfford = coins >= item.price;
+    const canAfford = isPremium || coins >= item.price;
     const rarity = RARITY_COLORS[item.category] ?? RARITY_COLORS.common;
 
     return (
@@ -89,7 +143,28 @@ export default function ShopScreen() {
         )}
 
         <View style={[styles.catImageContainer, { borderColor: rarity.border }]}>
-          <CatIllustration breed={item.breed} size={90} showBackground={false} />
+          {purchasingCatId === item.id && item.breed !== 'basic' ? (
+            <View style={{ position: 'relative' }}>
+              <AnimatedCat
+                breed={item.breed}
+                animationType="purchase"
+                isPremium={true}
+                size={90}
+                enableInteraction={false}
+              />
+              <Sparkles visible={true} count={4} />
+            </View>
+          ) : isOwned && item.breed !== 'basic' ? (
+            <AnimatedCat
+              breed={item.breed}
+              animationType="idle"
+              isPremium={true}
+              size={90}
+              enableInteraction={false}
+            />
+          ) : (
+            <CatIllustration breed={item.breed} size={90} showBackground={false} />
+          )}
         </View>
 
         <Text style={styles.catName} numberOfLines={1}>
@@ -100,15 +175,23 @@ export default function ShopScreen() {
         </Text>
 
         <View style={styles.priceRow}>
-          {item.price === 0 ? (
+          {isOwned ? (
+            <View style={[styles.priceBadge, { backgroundColor: '#E8F5E9' }]}>
+              <Text style={[styles.priceText, { color: '#388E3C' }]}>Owned</Text>
+            </View>
+          ) : item.price === 0 ? (
             <View style={styles.freeBadge}>
-              <Text style={styles.freeText}>✨ Free</Text>
+              <SparkleIcon size={14} /><Text style={styles.freeText}> Free</Text>
+            </View>
+          ) : isPremium ? (
+            <View style={[styles.freeBadge, { backgroundColor: '#FFF8E1' }]}>
+              <CrownIcon size={14} /><Text style={[styles.freeText, { color: '#F57F17' }]}> Free</Text>
             </View>
           ) : (
-            <View style={[styles.priceBadge, !canAfford && !isOwned && styles.priceBadgeInsufficient]}>
-              <Text style={styles.priceCoin}>🪙</Text>
-              <Text style={[styles.priceText, !canAfford && !isOwned && styles.priceInsufficient]}>
-                {isOwned ? 'Owned' : item.price}
+            <View style={[styles.priceBadge, !canAfford && styles.priceBadgeInsufficient]}>
+              <CoinIcon size={14} />
+              <Text style={[styles.priceText, !canAfford && styles.priceInsufficient]}>
+                {item.price}
               </Text>
             </View>
           )}
@@ -124,20 +207,66 @@ export default function ShopScreen() {
         catName={purchaseAnim.catName}
         onComplete={() => setPurchaseAnim({ visible: false, catName: '' })}
       />
+      <PaywallModal
+        visible={showFallbackPaywall}
+        isLoading={premiumLoading}
+        onPurchase={() => {
+          setPremium(true);
+          setShowFallbackPaywall(false);
+          Alert.alert('Welcome to Premium!', 'All cats are now free to claim!');
+        }}
+        onRestore={async () => {
+          const success = await restore();
+          if (success) {
+            setShowFallbackPaywall(false);
+            Alert.alert('Restored!', 'Your premium access has been restored.');
+          } else {
+            Alert.alert('Nothing to Restore', 'No previous purchases found.');
+          }
+        }}
+        onClose={() => setShowFallbackPaywall(false)}
+      />
 
       {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.screenTitle}>Cat Shop</Text>
-          <Text style={styles.subtitle}>Collect adorable companions!</Text>
+          <Text style={styles.subtitle}>
+            {isPremium ? 'Premium — All cats free!' : 'Collect adorable companions!'}
+          </Text>
         </View>
-        <View style={styles.coinsBadge}>
-          <View style={styles.coinIconContainer}>
-            <Text style={styles.coinIconLarge}>🪙</Text>
+        {!isPremium ? (
+          <View style={styles.coinsBadge}>
+            <View style={styles.coinIconContainer}>
+              <CoinIcon size={20} />
+            </View>
+            <Text style={styles.coinsText}>{coins}</Text>
           </View>
-          <Text style={styles.coinsText}>{coins}</Text>
-        </View>
+        ) : (
+          <View style={styles.premiumBadge}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <CrownIcon size={14} />
+              <Text style={styles.premiumBadgeText}>Premium</Text>
+            </View>
+          </View>
+        )}
       </View>
+
+      {/* Premium upsell banner */}
+      {!isPremium && (
+        <TouchableOpacity
+          style={styles.premiumBanner}
+          onPress={() => presentPaywall()}
+          activeOpacity={0.8}
+        >
+          <CrownIcon size={28} />
+          <View style={styles.premiumBannerContent}>
+            <Text style={styles.premiumBannerTitle}>Unlock All Cats</Text>
+            <Text style={styles.premiumBannerSubtitle}>Get everything for just $3.99</Text>
+          </View>
+          <Text style={styles.premiumBannerArrow}>→</Text>
+        </TouchableOpacity>
+      )}
 
       {/* All Cats - sorted by price */}
       <FlatList
@@ -316,5 +445,56 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#388E3C',
+  },
+
+  // Premium styles
+  premiumBadge: {
+    backgroundColor: '#FFF8E1',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 8,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1.5,
+    borderColor: '#FFD54F',
+  },
+  premiumBadgeText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#F57F17',
+  },
+  premiumBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF8E1',
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    paddingVertical: 14,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1.5,
+    borderColor: '#FFD54F',
+    gap: Spacing.sm,
+    ...Shadows.small,
+  },
+  premiumBannerEmoji: {
+    fontSize: 24,
+  },
+  premiumBannerContent: {
+    flex: 1,
+  },
+  premiumBannerTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#B8860B',
+  },
+  premiumBannerSubtitle: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#C4A035',
+    marginTop: 1,
+  },
+  premiumBannerArrow: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#B8860B',
   },
 });

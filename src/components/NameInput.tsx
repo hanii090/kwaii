@@ -11,6 +11,7 @@ import {
 import { Colors, Spacing, BorderRadius, Shadows } from '../constants/theme';
 import { useCatStore } from '../stores/catStore';
 import CatIllustration from './CatIllustration';
+import { PawIcon, SparkleIcon, HeartIcon, StarIcon } from './icons/KawaiiIcons';
 
 interface NameInputProps {
   onComplete: () => void;
@@ -34,11 +35,21 @@ export default function NameInput({ onComplete }: NameInputProps) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       {/* Floating decorations */}
-      <Text style={[styles.floatingDecor, { top: '8%', left: '10%' }]}>🐾</Text>
-      <Text style={[styles.floatingDecor, { top: '12%', right: '12%' }]}>✨</Text>
-      <Text style={[styles.floatingDecor, { top: '6%', right: '30%' }]}>💛</Text>
-      <Text style={[styles.floatingDecor, { bottom: '18%', left: '8%' }]}>🌟</Text>
-      <Text style={[styles.floatingDecor, { bottom: '22%', right: '10%' }]}>�</Text>
+      <View style={[styles.floatingDecor, { top: '8%', left: '10%' }]}>
+        <PawIcon size={20} />
+      </View>
+      <View style={[styles.floatingDecor, { top: '12%', right: '12%' }]}>
+        <SparkleIcon size={20} />
+      </View>
+      <View style={[styles.floatingDecor, { top: '6%', right: '30%' }]}>
+        <HeartIcon size={20} color="#FFD4A8" />
+      </View>
+      <View style={[styles.floatingDecor, { bottom: '18%', left: '8%' }]}>
+        <StarIcon size={20} />
+      </View>
+      <View style={[styles.floatingDecor, { bottom: '22%', right: '10%' }]}>
+        <SparkleIcon size={18} color="#B8D8BA" />
+      </View>
 
       <View style={styles.content}>
         {/* Cat illustration */}
@@ -85,7 +96,7 @@ export default function NameInput({ onComplete }: NameInputProps) {
           disabled={name.trim().length === 0}
           activeOpacity={0.8}
         >
-          <Text style={styles.buttonText}>Let's Go! ✨</Text>
+          <Text style={styles.buttonText}>Let's Go!</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

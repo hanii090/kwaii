@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,21 +8,237 @@ import {
   TextInput,
   Alert,
   Modal,
+  Animated,
+  Easing,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PawPrint } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, BorderRadius, Shadows } from '../../src/constants/theme';
 import { useCatStore } from '../../src/stores/catStore';
 import CatIllustration from '../../src/components/CatIllustration';
+import AnimatedCat from '../../src/components/AnimatedCat';
 import type { Cat } from '../../src/types';
+import {
+  CrownIcon,
+  StarIcon,
+  CatFaceIcon,
+  SparkleIcon,
+  HappyCatMoodIcon,
+  NeutralCatMoodIcon,
+  SleepyCatMoodIcon,
+  ExcitedCatMoodIcon,
+} from '../../src/components/icons/KawaiiIcons';
 
-const STATE_EMOJI: Record<string, string> = {
-  happy: '😊',
-  neutral: '😺',
-  sleepy: '😴',
-  excited: '🤩',
+const STATE_MOOD_ICON: Record<string, React.ComponentType<{ size?: number }>> = {
+  happy: HappyCatMoodIcon,
+  neutral: NeutralCatMoodIcon,
+  sleepy: SleepyCatMoodIcon,
+  excited: ExcitedCatMoodIcon,
 };
+
+// Animated card wrapper for staggered entry + press spring
+function AnimatedCatCard({
+  item,
+  index,
+  isActive,
+  onPress,
+  onRename,
+}: {
+  item: Cat;
+  index: number;
+  isActive: boolean;
+  onPress: () => void;
+  onRename: () => void;
+}) {
+  const xpNeeded = item.level * 100;
+  const xpPercent = xpNeeded > 0 ? (item.currentXP / xpNeeded) * 100 : 0;
+  const MoodIcon = STATE_MOOD_ICON[item.state] || NeutralCatMoodIcon;
+
+  // Staggered entry animation
+  const entryAnim = useRef(new Animated.Value(0)).current;
+  // Press spring
+  const pressScale = useRef(new Animated.Value(1)).current;
+  // Active glow pulse
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  // Mood bounce
+  const moodBounce = useRef(new Animated.Value(1)).current;
+  // Breathing for basic cats
+  const breatheScale = useRef(new Animated.Value(1)).current;
+  // XP bar animated width
+  const xpWidth = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Staggered fade-in + slide-up
+    Animated.timing(entryAnim, {
+      toValue: 1,
+      duration: 400,
+      delay: index * 120,
+      easing: Easing.out(Easing.back(1.2)),
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  useEffect(() => {
+    // Active glow pulse
+    if (isActive) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(glowAnim, { toValue: 1, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+          Animated.timing(glowAnim, { toValue: 0, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+        ])
+      ).start();
+    } else {
+      glowAnim.setValue(0);
+    }
+  }, [isActive]);
+
+  useEffect(() => {
+    // Mood emoji gentle bounce loop
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(moodBounce, { toValue: 1.2, duration: 800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(moodBounce, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
+  useEffect(() => {
+    // Breathing animation for basic cats
+    if (item.breed === 'basic') {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(breatheScale, { toValue: 1.04, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(breatheScale, { toValue: 1, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        ])
+      ).start();
+    }
+  }, [item.breed]);
+
+  useEffect(() => {
+    // Animate XP bar fill
+    Animated.timing(xpWidth, {
+      toValue: xpPercent,
+      duration: 600,
+      delay: index * 120 + 300,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: false,
+    }).start();
+  }, [xpPercent]);
+
+  const handlePressIn = () => {
+    Animated.spring(pressScale, { toValue: 0.95, damping: 15, stiffness: 300, useNativeDriver: true }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(pressScale, { toValue: 1, damping: 10, stiffness: 200, useNativeDriver: true }).start();
+  };
+
+  const glowShadowOpacity = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.15, 0.4],
+  });
+
+  const glowShadowRadius = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [12, 20],
+  });
+
+  return (
+    <Animated.View
+      style={{
+        flex: 1,
+        opacity: entryAnim,
+        transform: [
+          { translateY: entryAnim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) },
+          { scale: pressScale },
+        ],
+      }}
+    >
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+      >
+        <Animated.View
+          style={[
+            styles.catCard,
+            isActive && styles.catCardActive,
+            isActive && {
+              shadowOpacity: glowShadowOpacity,
+              shadowRadius: glowShadowRadius,
+            },
+          ]}
+        >
+          {isActive && (
+            <View style={styles.activeBadge}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+              <CrownIcon size={10} color="#FFFFFF" />
+              <Text style={styles.activeBadgeText}>Active</Text>
+            </View>
+            </View>
+          )}
+
+          {/* Mood indicator with bounce */}
+          <Animated.View style={[styles.moodBadge, { transform: [{ scale: moodBounce }] }]}>
+            <MoodIcon size={18} />
+          </Animated.View>
+
+          {/* Cat image with glow ring for active */}
+          <View style={[styles.catImageContainer, isActive && styles.catImageActive]}>
+            {item.breed !== 'basic' ? (
+              <AnimatedCat
+                breed={item.breed}
+                animationType="idle"
+                isPremium={true}
+                size={95}
+                enableInteraction={false}
+              />
+            ) : (
+              <Animated.View style={{ transform: [{ scale: breatheScale }] }}>
+                <CatIllustration breed={item.breed} size={95} state={item.state} showBackground={false} />
+              </Animated.View>
+            )}
+          </View>
+
+          <Text style={styles.catName} numberOfLines={1}>
+            {item.name}
+          </Text>
+
+          {/* Level badge */}
+          <View style={styles.levelBadge}>
+            <StarIcon size={12} />
+            <Text style={styles.levelText}>Level {item.level}</Text>
+          </View>
+
+          {/* XP Bar with animated fill */}
+          <View style={styles.xpContainer}>
+            <View style={styles.xpTrack}>
+              <Animated.View
+                style={[
+                  styles.xpFill,
+                  { width: xpWidth.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'], extrapolate: 'clamp' }) },
+                ]}
+              />
+            </View>
+            <Text style={styles.xpText}>
+              {item.currentXP}/{xpNeeded} XP
+            </Text>
+          </View>
+
+          {/* Rename button */}
+          <TouchableOpacity
+            style={styles.renameButton}
+            onPress={onRename}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.renameButtonText}>✏️ Rename</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
+  );
+}
 
 export default function CatsScreen() {
   const { cats, activeCatId, nameTags, setActiveCat, renameCat } = useCatStore();
@@ -32,6 +248,21 @@ export default function CatsScreen() {
     currentName: '',
   });
   const [nameInput, setNameInput] = useState('');
+
+  // Modal spring animation
+  const modalScale = useRef(new Animated.Value(0)).current;
+  const modalOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (renameModal.visible) {
+      modalScale.setValue(0.6);
+      modalOpacity.setValue(0);
+      Animated.parallel([
+        Animated.spring(modalScale, { toValue: 1, damping: 12, stiffness: 200, useNativeDriver: true }),
+        Animated.timing(modalOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+      ]).start();
+    }
+  }, [renameModal.visible]);
 
   const handleSetActive = (catId: string) => {
     if (catId === activeCatId) return;
@@ -48,6 +279,15 @@ export default function CatsScreen() {
     setRenameModal({ visible: true, catId: cat.id, currentName: cat.name });
   };
 
+  const handleCloseModal = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(modalScale, { toValue: 0.6, duration: 150, useNativeDriver: true }),
+      Animated.timing(modalOpacity, { toValue: 0, duration: 150, useNativeDriver: true }),
+    ]).start(() => {
+      setRenameModal({ visible: false, catId: '', currentName: '' });
+    });
+  }, []);
+
   const handleConfirmRename = () => {
     if (nameInput.trim() && nameInput.trim() !== renameModal.currentName) {
       const success = renameCat(renameModal.catId, nameInput.trim());
@@ -55,66 +295,19 @@ export default function CatsScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     }
-    setRenameModal({ visible: false, catId: '', currentName: '' });
+    handleCloseModal();
   };
 
-  const renderCatCard = ({ item }: { item: Cat }) => {
+  const renderCatCard = ({ item, index }: { item: Cat; index: number }) => {
     const isActive = item.id === activeCatId;
-    const xpNeeded = item.level * 100;
-    const xpPercent = xpNeeded > 0 ? (item.currentXP / xpNeeded) * 100 : 0;
-    const moodEmoji = STATE_EMOJI[item.state] || '😺';
-
     return (
-      <TouchableOpacity
-        style={[styles.catCard, isActive && styles.catCardActive]}
+      <AnimatedCatCard
+        item={item}
+        index={index}
+        isActive={isActive}
         onPress={() => handleSetActive(item.id)}
-        activeOpacity={0.7}
-      >
-        {isActive && (
-          <View style={styles.activeBadge}>
-            <Text style={styles.activeBadgeText}>👑 Active</Text>
-          </View>
-        )}
-
-        {/* Mood indicator */}
-        <View style={styles.moodBadge}>
-          <Text style={styles.moodEmoji}>{moodEmoji}</Text>
-        </View>
-
-        {/* Cat image with glow ring for active */}
-        <View style={[styles.catImageContainer, isActive && styles.catImageActive]}>
-          <CatIllustration breed={item.breed} size={95} state={item.state} showBackground={false} />
-        </View>
-
-        <Text style={styles.catName} numberOfLines={1}>
-          {item.name}
-        </Text>
-
-        {/* Level badge */}
-        <View style={styles.levelBadge}>
-          <Text style={styles.levelStar}>⭐</Text>
-          <Text style={styles.levelText}>Level {item.level}</Text>
-        </View>
-
-        {/* XP Bar */}
-        <View style={styles.xpContainer}>
-          <View style={styles.xpTrack}>
-            <View style={[styles.xpFill, { width: `${xpPercent}%` }]} />
-          </View>
-          <Text style={styles.xpText}>
-            {item.currentXP}/{xpNeeded} XP
-          </Text>
-        </View>
-
-        {/* Rename button */}
-        <TouchableOpacity
-          style={styles.renameButton}
-          onPress={() => handleOpenRename(item)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.renameButtonText}>✏️ Rename</Text>
-        </TouchableOpacity>
-      </TouchableOpacity>
+        onRename={() => handleOpenRename(item)}
+      />
     );
   };
 
@@ -123,11 +316,11 @@ export default function CatsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <PawPrint size={22} color={Colors.warm} strokeWidth={2.5} />
+          <CatFaceIcon size={22} />
           <Text style={styles.screenTitle}>Your Cats</Text>
         </View>
         <View style={styles.nameTagBadge}>
-          <Text style={styles.nameTagEmoji}>🏷️</Text>
+          <SparkleIcon size={14} />
           <Text style={styles.nameTagText}>{nameTags}</Text>
         </View>
       </View>
@@ -148,10 +341,10 @@ export default function CatsScreen() {
         ListFooterComponent={<View style={{ height: 100 }} />}
       />
 
-      {/* Rename Modal */}
-      <Modal visible={renameModal.visible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+      {/* Rename Modal with spring animation */}
+      <Modal visible={renameModal.visible} transparent animationType="none">
+        <Animated.View style={[styles.modalOverlay, { opacity: modalOpacity }]}>
+          <Animated.View style={[styles.modalCard, { transform: [{ scale: modalScale }] }]}>
             <Text style={styles.modalEmoji}>✏️</Text>
             <Text style={styles.modalTitle}>Rename your cat</Text>
             <TextInput
@@ -163,11 +356,14 @@ export default function CatsScreen() {
               autoFocus
               maxLength={20}
             />
-            <Text style={styles.modalCost}>🏷️ Costs 1 name tag</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 }}>
+              <SparkleIcon size={14} />
+              <Text style={styles.modalCost}>Costs 1 name tag</Text>
+            </View>
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.modalCancelBtn}
-                onPress={() => setRenameModal({ visible: false, catId: '', currentName: '' })}
+                onPress={handleCloseModal}
               >
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
@@ -178,8 +374,8 @@ export default function CatsScreen() {
                 <Text style={styles.modalConfirmText}>Confirm</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </Animated.View>
+        </Animated.View>
       </Modal>
     </SafeAreaView>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, ImageSourcePropType } from 'react-native';
 import type { CatBreed, CatState } from '../types';
+import { CatFaceIcon } from './icons/KawaiiIcons';
 
 const snowballImage = require('../../assets/images/snowball.webp');
 const cloudImage = require('../../assets/images/cloud.webp');
@@ -16,12 +17,12 @@ const BREED_IMAGES: Partial<Record<CatBreed, ImageSourcePropType>> = {
   midnight_void: midnightVoidImage,
 };
 
-const BREED_EMOJIS: Record<CatBreed, string> = {
-  basic: '🐱',
-  cloud: '☁️',
-  cocoa: '🍫',
-  mochi: '🍡',
-  midnight_void: '🌑',
+const BREED_COLORS: Record<CatBreed, string> = {
+  basic: '#F4A261',
+  cloud: '#E8D5C0',
+  cocoa: '#8B5E3C',
+  mochi: '#FFB4A2',
+  midnight_void: '#5C3D2E',
 };
 
 interface CatIllustrationProps {
@@ -58,7 +59,7 @@ export default function CatIllustration({
           resizeMode="contain"
         />
       ) : (
-        <Text style={[styles.emoji, { fontSize: size * 0.5 }]}>{BREED_EMOJIS[breed]}</Text>
+        <CatFaceIcon size={size * 0.5} color={BREED_COLORS[breed]} />
       )}
     </View>
   );

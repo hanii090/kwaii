@@ -2,6 +2,16 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import type { CatMood } from '../stores/catStore';
 import { Colors } from '../constants/theme';
+import {
+  SparkleIcon,
+  StarIcon,
+  HatIcon,
+  SleepIcon,
+  HappyCatMoodIcon,
+  NeutralCatMoodIcon,
+  SleepyCatMoodIcon,
+  ExcitedCatMoodIcon,
+} from './icons/KawaiiIcons';
 
 interface CatAvatarProps {
   mood: CatMood;
@@ -58,17 +68,17 @@ export default function CatAvatar({ mood, size = 160, equippedItems = [] }: CatA
     }
   }, [mood]);
 
-  const getCatFace = () => {
+  const getCatFaceIcon = (faceSize: number) => {
     switch (mood) {
       case 'happy':
-        return '😸';
+        return <HappyCatMoodIcon size={faceSize} />;
       case 'excited':
-        return '😻';
+        return <ExcitedCatMoodIcon size={faceSize} />;
       case 'sleepy':
-        return '😽';
+        return <SleepyCatMoodIcon size={faceSize} />;
       case 'neutral':
       default:
-        return '🐱';
+        return <NeutralCatMoodIcon size={faceSize} />;
     }
   };
 
@@ -87,20 +97,26 @@ export default function CatAvatar({ mood, size = 160, equippedItems = [] }: CatA
       ]}
     >
       {hasHat && (
-        <Text style={[styles.hat, { fontSize: size * 0.25, top: -size * 0.08 }]}>🎩</Text>
+        <View style={[styles.hat, { top: -size * 0.08 }]}>
+          <HatIcon size={size * 0.25} />
+        </View>
       )}
-      <Text style={[styles.catFace, { fontSize: size * 0.55 }]}>{getCatFace()}</Text>
+      {getCatFaceIcon(size * 0.55)}
 
       {mood === 'sleepy' && (
         <View style={styles.zzzContainer}>
-          <Text style={styles.zzz}>💤</Text>
+          <SleepIcon size={24} />
         </View>
       )}
 
       {mood === 'excited' && (
         <View style={styles.sparkleContainer}>
-          <Text style={styles.sparkle}>✨</Text>
-          <Text style={[styles.sparkle, { left: -10, top: -5 }]}>⭐</Text>
+          <View style={styles.sparkle}>
+            <SparkleIcon size={20} />
+          </View>
+          <View style={[styles.sparkle, { left: -10, top: -5 }]}>
+            <StarIcon size={20} />
+          </View>
         </View>
       )}
     </Animated.View>

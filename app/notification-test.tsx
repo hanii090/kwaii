@@ -13,6 +13,18 @@ import { X } from 'lucide-react-native';
 import { Colors, Spacing, BorderRadius, Shadows } from '../src/constants/theme';
 import { NotificationService } from '../src/services/notificationService';
 import { useNotificationStore } from '../src/stores/notificationStore';
+import {
+  BeakerIcon,
+  MedPillIcon,
+  CelebrationIcon,
+  StreakFlameIcon,
+  SadCatIcon,
+  ClipboardIcon,
+  SparkleIcon,
+  StarIcon,
+  RestoreIcon,
+  CheckIcon,
+} from '../src/components/icons/KawaiiIcons';
 
 export default function NotificationTestScreen() {
   const { permissionStatus } = useNotificationStore();
@@ -54,7 +66,7 @@ export default function NotificationTestScreen() {
       const { default: Notifications } = await import('expo-notifications');
       const id = await Notifications.scheduleNotificationAsync({
         content: {
-          title: 'Test Notification 🧪',
+          title: 'Test Notification',
           body: 'This is a test notification from Kawaii Meds!',
           data: { type: 'test' },
         },
@@ -83,7 +95,7 @@ export default function NotificationTestScreen() {
       const { default: Notifications } = await import('expo-notifications');
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: '🔥 7 Day Streak!',
+          title: '7 Day Streak!',
           body: "Amazing! You've built a 7-day medication habit!",
           data: { type: 'streak_milestone', days: 7 },
         },
@@ -109,7 +121,7 @@ export default function NotificationTestScreen() {
       const { default: Notifications } = await import('expo-notifications');
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: 'We miss you! 😿',
+          title: 'We miss you!',
           body: 'Your cat is getting sleepy. Come back and take your meds!',
           data: { type: 'encouragement' },
         },
@@ -169,7 +181,7 @@ export default function NotificationTestScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.headerIcon}>
-            <Text style={{ fontSize: 20 }}>🧪</Text>
+            <BeakerIcon size={22} />
           </View>
           <Text style={styles.headerTitle}>Notification Test</Text>
         </View>
@@ -202,28 +214,28 @@ export default function NotificationTestScreen() {
         {/* Permissions */}
         <Text style={styles.sectionLabel}>PERMISSIONS</Text>
         <View style={styles.buttonGroup}>
-          <TestButton label="Request Permissions" emoji="🔐" onPress={handleRequestPermissions} />
-          <TestButton label="Check Status" emoji="🔍" onPress={handleCheckStatus} />
+          <TestButton label="Request Permissions" icon={<SparkleIcon size={18} />} onPress={handleRequestPermissions} />
+          <TestButton label="Check Status" icon={<CheckIcon size={18} />} onPress={handleCheckStatus} />
         </View>
 
         {/* Send Notifications */}
         <Text style={styles.sectionLabel}>SEND NOTIFICATIONS</Text>
         <View style={styles.buttonGroup}>
-          <TestButton label="Medication Reminder (+1 min)" emoji="💊" onPress={handleSendMedicationReminder} />
-          <TestButton label="Test in 10 Seconds" emoji="⏱" onPress={handleSendIn10Seconds} />
-          <TestButton label="Celebration" emoji="🎉" onPress={handleSendCelebration} />
-          <TestButton label="Streak Milestone" emoji="🔥" onPress={handleSendStreak} />
-          <TestButton label="Level Up" emoji="🎊" onPress={handleSendLevelUp} />
-          <TestButton label="Encouragement" emoji="😿" onPress={handleSendEncouragement} />
+          <TestButton label="Medication Reminder (+1 min)" icon={<MedPillIcon size={18} />} onPress={handleSendMedicationReminder} />
+          <TestButton label="Test in 10 Seconds" icon={<StarIcon size={18} />} onPress={handleSendIn10Seconds} />
+          <TestButton label="Celebration" icon={<CelebrationIcon size={18} />} onPress={handleSendCelebration} />
+          <TestButton label="Streak Milestone" icon={<StreakFlameIcon size={18} />} onPress={handleSendStreak} />
+          <TestButton label="Level Up" icon={<CelebrationIcon size={18} />} onPress={handleSendLevelUp} />
+          <TestButton label="Encouragement" icon={<SadCatIcon size={18} />} onPress={handleSendEncouragement} />
         </View>
 
         {/* Management */}
         <Text style={styles.sectionLabel}>MANAGEMENT</Text>
         <View style={styles.buttonGroup}>
-          <TestButton label="View Scheduled" emoji="📋" onPress={handleViewScheduled} />
-          <TestButton label="Clear All Notifications" emoji="🗑" onPress={handleClearAll} danger />
-          <TestButton label="Clear Badge" emoji="🔢" onPress={handleClearBadge} />
-          <TestButton label="Set Badge to 3" emoji="3️⃣" onPress={handleUpdateBadge} />
+          <TestButton label="View Scheduled" icon={<ClipboardIcon size={18} />} onPress={handleViewScheduled} />
+          <TestButton label="Clear All Notifications" icon={<RestoreIcon size={18} />} onPress={handleClearAll} danger />
+          <TestButton label="Clear Badge" icon={<CheckIcon size={18} />} onPress={handleClearBadge} />
+          <TestButton label="Set Badge to 3" icon={<StarIcon size={18} />} onPress={handleUpdateBadge} />
         </View>
 
         {/* Log */}
@@ -246,19 +258,19 @@ export default function NotificationTestScreen() {
 
 interface TestButtonProps {
   label: string;
-  emoji: string;
+  icon: React.ReactNode;
   onPress: () => void;
   danger?: boolean;
 }
 
-function TestButton({ label, emoji, onPress, danger }: TestButtonProps) {
+function TestButton({ label, icon, onPress, danger }: TestButtonProps) {
   return (
     <TouchableOpacity
       style={[styles.testButton, danger && styles.testButtonDanger]}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Text style={styles.testButtonEmoji}>{emoji}</Text>
+      <View style={styles.testButtonIconWrap}>{icon}</View>
       <Text style={[styles.testButtonLabel, danger && styles.testButtonLabelDanger]}>
         {label}
       </Text>
@@ -359,10 +371,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FFCDD2',
   },
-  testButtonEmoji: {
-    fontSize: 18,
+  testButtonIconWrap: {
     width: 24,
-    textAlign: 'center',
+    alignItems: 'center',
   },
   testButtonLabel: {
     fontSize: 15,

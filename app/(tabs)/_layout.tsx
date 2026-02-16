@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
-import { Tabs } from 'expo-router';
+import { View, Text, StyleSheet, Platform, TouchableOpacity } from 'react-native';
+import { Tabs, router } from 'expo-router';
 import { BlurView } from 'expo-blur';
-import { Home, Cat, ShoppingBag, Settings as SettingsIcon } from 'lucide-react-native';
-import { Colors, Spacing } from '../../src/constants/theme';
+import { Home, Cat, Plus, ShoppingBag, Settings as SettingsIcon } from 'lucide-react-native';
+import { Colors, Spacing, Shadows } from '../../src/constants/theme';
 
 interface TabButtonProps {
   focused: boolean;
@@ -57,6 +57,27 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="add"
+        options={{
+          tabBarIcon: () => (
+            <View style={styles.fabContainer}>
+              <View style={styles.fabButton}>
+                <Plus size={28} color={Colors.white} strokeWidth={3} />
+              </View>
+            </View>
+          ),
+          tabBarButton: ({ children }) => (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => router.push('/add-medication')}
+              style={styles.fabTouchable}
+            >
+              {children}
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="shop"
         options={{
           tabBarIcon: ({ focused }) => (
@@ -90,7 +111,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    overflow: 'hidden',
     shadowColor: '#8B5E3C',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.06,
@@ -114,5 +134,29 @@ const styles = StyleSheet.create({
   },
   tabButtonActive: {
     backgroundColor: 'rgba(212,231,214,0.65)',
+  },
+  fabTouchable: {
+    top: -18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fabContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fabButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.warm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.warm,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 10,
+    borderWidth: 3,
+    borderColor: Colors.white,
   },
 });

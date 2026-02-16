@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCatStore } from '../src/stores/catStore';
 import { useMedicationStore } from '../src/stores/medicationStore';
@@ -10,6 +10,8 @@ import { NotificationService } from '../src/services/notificationService';
 import { registerBackgroundFetch } from '../src/services/backgroundTaskService';
 import NotificationPermissionModal from '../src/components/modals/NotificationPermissionModal';
 import { Colors } from '../src/constants/theme';
+import { usePremiumStore } from '../src/stores/premiumStore';
+import ErrorBoundary from '../src/components/ErrorBoundary';
 
 const NOTIF_PROMPTED_KEY = '@kawaii_notif_prompted';
 
@@ -23,7 +25,9 @@ export default function RootLayout() {
     const init = async () => {
       const completed = await loadOnboardingState();
       setHasOnboarded(completed);
-      setIsReady(true);
+
+      // Initialize RevenueCat and check premium status
+      await usePremiumStore.getState().initialize();
 
       // Load notification preferences
       await useNotificationStore.getState().loadPreferences();
@@ -74,12 +78,30 @@ export default function RootLayout() {
           }
         }
       });
+
+      // Check if we need to reset medications for a new day
+      useMedicationStore.getState().checkAndResetIfNewDay();
+
+      // Mark ready AFTER all setup (fixes race condition with permission modal)
+      setIsReady(true);
     };
     init();
 
     return () => {
       NotificationService.cleanup();
     };
+  }, []);
+
+  // Re-check daily reset when app comes to foreground
+  const appState = useRef(AppState.currentState);
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+        useMedicationStore.getState().checkAndResetIfNewDay();
+      }
+      appState.current = nextAppState;
+    });
+    return () => subscription.remove();
   }, []);
 
   useEffect(() => {
@@ -113,7 +135,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <StatusBar style="dark" />
       <NotificationPermissionModal
         visible={showPermissionModal}
@@ -151,7 +173,7 @@ export default function RootLayout() {
           }}
         />
       </Stack>
-    </>
+    </ErrorBoundary>
   );
 }
 

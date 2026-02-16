@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Kawaii Meds",
-    "slug": "kawaii-meds",
+    "slug": "kiwaii",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,9 +14,11 @@
       "backgroundColor": "#FFF9F0"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kawaiimeds.app"
     },
     "android": {
+      "package": "com.kawaiimeds.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFF9F0"
@@ -38,6 +40,13 @@
           "enableBackgroundRemoteNotifications": false
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "932358ca-3937-491c-a950-830f5f739a7b"
+      }
+    },
+    "owner": "rehan9"
   }
 }

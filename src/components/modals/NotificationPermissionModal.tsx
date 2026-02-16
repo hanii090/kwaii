@@ -7,16 +7,23 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Colors, Spacing, BorderRadius, Shadows } from '../../constants/theme';
+import {
+  MedPillIcon,
+  CelebrationIcon,
+  StreakFlameIcon,
+  ChartIcon,
+  NotifBellIcon,
+} from '../icons/KawaiiIcons';
 
 interface BenefitRowProps {
-  icon: string;
+  icon: React.ReactNode;
   text: string;
 }
 
 function BenefitRow({ icon, text }: BenefitRowProps) {
   return (
     <View style={styles.benefitRow}>
-      <Text style={styles.benefitIcon}>{icon}</Text>
+      <View style={styles.benefitIconWrap}>{icon}</View>
       <Text style={styles.benefitText}>{text}</Text>
     </View>
   );
@@ -37,17 +44,19 @@ export default function NotificationPermissionModal({
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          <Text style={styles.emoji}>🔔</Text>
+          <View style={styles.emojiWrap}>
+            <NotifBellIcon size={48} />
+          </View>
           <Text style={styles.title}>Enable Notifications?</Text>
           <Text style={styles.description}>
             Get reminders so you never miss a dose. We'll send you:
           </Text>
 
           <View style={styles.benefits}>
-            <BenefitRow icon="💊" text="Medication reminders" />
-            <BenefitRow icon="🎉" text="Celebration alerts" />
-            <BenefitRow icon="🔥" text="Streak milestones" />
-            <BenefitRow icon="📊" text="Daily summaries" />
+            <BenefitRow icon={<MedPillIcon size={20} />} text="Medication reminders" />
+            <BenefitRow icon={<CelebrationIcon size={20} />} text="Celebration alerts" />
+            <BenefitRow icon={<StreakFlameIcon size={20} />} text="Streak milestones" />
+            <BenefitRow icon={<ChartIcon size={20} />} text="Daily summaries" />
           </View>
 
           <TouchableOpacity
@@ -88,9 +97,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...Shadows.large,
   },
-  emoji: {
-    fontSize: 48,
+  emojiWrap: {
     marginBottom: Spacing.md,
+    alignItems: 'center',
+  },
+  benefitIconWrap: {
+    width: 24,
+    alignItems: 'center',
   },
   title: {
     fontSize: 22,

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, Animated, Easing } from 'react-native';
+import { CoinIcon } from '../icons/KawaiiIcons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -111,7 +112,7 @@ export default function CoinCollect({
           { opacity, transform: [{ translateX }, { translateY }, { scale }, { rotateY: spin }] },
         ]}
       >
-        <Text style={styles.coinEmoji}>🪙</Text>
+        <CoinIcon size={32} />
       </Animated.View>
 
       <Animated.View

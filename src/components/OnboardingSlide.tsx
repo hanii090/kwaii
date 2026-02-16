@@ -7,6 +7,16 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Colors, Spacing, BorderRadius } from '../constants/theme';
+import {
+  MedPillIcon,
+  SparkleIcon,
+  StarIcon,
+  ClipboardIcon,
+  CheckIcon,
+  PawIcon,
+  HeartIcon,
+  NotifBellIcon,
+} from './icons/KawaiiIcons';
 
 const { width } = Dimensions.get('window');
 
@@ -17,31 +27,44 @@ const SLIDE_BG_COLORS = [
   '#EDE7F6', // soft lavender
 ];
 
-const FLOATING_DECORATIONS: Record<string, { emoji: string; top: number; left: number; size: number; opacity: number }[]> = {
+type IconType = 'pill' | 'sparkle' | 'star' | 'clipboard' | 'check' | 'paw' | 'heart' | 'bell';
+
+const FLOATING_DECORATIONS: Record<string, { icon: IconType; top: number; left: number; size: number; opacity: number }[]> = {
   '1': [
-    { emoji: '💊', top: 15, left: 10, size: 22, opacity: 0.25 },
-    { emoji: '⏰', top: 60, left: 85, size: 18, opacity: 0.2 },
-    { emoji: '✨', top: 40, left: 5, size: 16, opacity: 0.3 },
-    { emoji: '🌟', top: 10, left: 75, size: 14, opacity: 0.2 },
+    { icon: 'pill', top: 15, left: 10, size: 22, opacity: 0.25 },
+    { icon: 'star', top: 60, left: 85, size: 18, opacity: 0.2 },
+    { icon: 'sparkle', top: 40, left: 5, size: 16, opacity: 0.3 },
+    { icon: 'star', top: 10, left: 75, size: 14, opacity: 0.2 },
   ],
   '2': [
-    { emoji: '📋', top: 12, left: 80, size: 20, opacity: 0.25 },
-    { emoji: '✅', top: 55, left: 8, size: 18, opacity: 0.2 },
-    { emoji: '💊', top: 35, left: 88, size: 16, opacity: 0.2 },
-    { emoji: '🌿', top: 8, left: 15, size: 18, opacity: 0.25 },
+    { icon: 'clipboard', top: 12, left: 80, size: 20, opacity: 0.25 },
+    { icon: 'check', top: 55, left: 8, size: 18, opacity: 0.2 },
+    { icon: 'pill', top: 35, left: 88, size: 16, opacity: 0.2 },
+    { icon: 'sparkle', top: 8, left: 15, size: 18, opacity: 0.25 },
   ],
   '3': [
-    { emoji: '🐾', top: 15, left: 8, size: 20, opacity: 0.25 },
-    { emoji: '💛', top: 50, left: 85, size: 18, opacity: 0.2 },
-    { emoji: '✨', top: 10, left: 82, size: 16, opacity: 0.25 },
-    { emoji: '🎮', top: 58, left: 6, size: 16, opacity: 0.2 },
+    { icon: 'paw', top: 15, left: 8, size: 20, opacity: 0.25 },
+    { icon: 'heart', top: 50, left: 85, size: 18, opacity: 0.2 },
+    { icon: 'sparkle', top: 10, left: 82, size: 16, opacity: 0.25 },
+    { icon: 'star', top: 58, left: 6, size: 16, opacity: 0.2 },
   ],
   '4': [
-    { emoji: '🔔', top: 12, left: 10, size: 22, opacity: 0.25 },
-    { emoji: '💊', top: 55, left: 88, size: 18, opacity: 0.2 },
-    { emoji: '⏰', top: 8, left: 80, size: 16, opacity: 0.2 },
-    { emoji: '🐱', top: 50, left: 5, size: 18, opacity: 0.25 },
+    { icon: 'bell', top: 12, left: 10, size: 22, opacity: 0.25 },
+    { icon: 'pill', top: 55, left: 88, size: 18, opacity: 0.2 },
+    { icon: 'sparkle', top: 8, left: 80, size: 16, opacity: 0.2 },
+    { icon: 'paw', top: 50, left: 5, size: 18, opacity: 0.25 },
   ],
+};
+
+const ICON_MAP: Record<IconType, React.ComponentType<{ size?: number; color?: string }>> = {
+  pill: MedPillIcon,
+  sparkle: SparkleIcon,
+  star: StarIcon,
+  clipboard: ClipboardIcon,
+  check: CheckIcon,
+  paw: PawIcon,
+  heart: HeartIcon,
+  bell: NotifBellIcon,
 };
 
 export interface SlideData {
@@ -78,22 +101,24 @@ export default function OnboardingSlide({
         </View>
 
         {/* Floating decorations */}
-        {decorations.map((dec, i) => (
-          <Text
-            key={i}
-            style={[
-              styles.floatingDecor,
-              {
-                top: `${dec.top}%`,
-                left: `${dec.left}%`,
-                fontSize: dec.size,
-                opacity: dec.opacity,
-              },
-            ]}
-          >
-            {dec.emoji}
-          </Text>
-        ))}
+        {decorations.map((dec, i) => {
+          const IconComp = ICON_MAP[dec.icon];
+          return (
+            <View
+              key={i}
+              style={[
+                styles.floatingDecor,
+                {
+                  top: `${dec.top}%`,
+                  left: `${dec.left}%`,
+                  opacity: dec.opacity,
+                },
+              ]}
+            >
+              <IconComp size={dec.size} />
+            </View>
+          );
+        })}
 
         <View style={styles.illustrationContainer}>
           <Illustration width={220} height={220} />

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Cat, CatBreed, CatState, Preferences, UserProfile } from '../types';
 
@@ -26,6 +27,7 @@ interface CatStore {
   activeCatId: string;
   coins: number;
   streak: number;
+  lastStreakDate: string | null; // yyyy-MM-dd of last streak increment
   totalMedsTaken: number;
   happiness: number;
   nameTags: number;
@@ -60,7 +62,7 @@ interface CatStore {
   resetOnboarding: () => Promise<void>;
 
   // Legacy compatibility
-  pet: {
+  activeCatLegacy: {
     name: string;
     happiness: number;
     hunger: number;
@@ -73,12 +75,25 @@ interface CatStore {
     inventory: string[];
     equippedItems: string[];
   };
-  feedPet: () => void;
+  feedCat: () => void;
   purchaseItem: (itemId: string, price: number) => boolean;
   equipItem: (itemId: string) => void;
 }
 
-export const useCatStore = create<CatStore>((set, get) => ({
+const getTodayKey = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+const getYesterdayKey = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+export const useCatStore = create<CatStore>()(
+  persist(
+    (set, get) => ({
   user: {
     name: '',
     onboardingComplete: false,
@@ -94,14 +109,15 @@ export const useCatStore = create<CatStore>((set, get) => ({
   activeCatId: 'cat_starter',
   coins: 0,
   streak: 0,
+  lastStreakDate: null,
   totalMedsTaken: 0,
   happiness: 80,
   nameTags: 3,
   isLoading: true,
   lastLevelUp: null,
 
-  // Computed: legacy pet object for backward compatibility
-  get pet() {
+  // Computed: legacy cat object for backward compatibility
+  get activeCatLegacy() {
     const state = get();
     const activeCat = state.cats.find((c) => c.id === state.activeCatId) ?? state.cats[0] ?? DEFAULT_CAT;
     return {
@@ -211,11 +227,15 @@ export const useCatStore = create<CatStore>((set, get) => ({
 
   renameCat: (catId, newName) => {
     const state = get();
-    if (state.nameTags <= 0) return false;
+    // Premium users get unlimited renames; check via premiumStore
+    const { usePremiumStore } = require('./premiumStore');
+    const isPremium = usePremiumStore.getState().isPremium;
+
+    if (!isPremium && state.nameTags <= 0) return false;
 
     set((s) => ({
       cats: s.cats.map((c) => (c.id === catId ? { ...c, name: newName } : c)),
-      nameTags: s.nameTags - 1,
+      nameTags: isPremium ? s.nameTags : s.nameTags - 1,
     }));
     return true;
   },
@@ -231,6 +251,8 @@ export const useCatStore = create<CatStore>((set, get) => ({
       const shouldLevelUp = newXP >= xpToLevel;
       const newLevel = shouldLevelUp ? activeCat.level + 1 : activeCat.level;
       const bonusCoins = shouldLevelUp ? newLevel * 10 : 0;
+      // Award a name tag every 5 levels
+      const earnedNameTag = shouldLevelUp && newLevel % 5 === 0;
 
       return {
         cats: state.cats.map((c) =>
@@ -246,6 +268,7 @@ export const useCatStore = create<CatStore>((set, get) => ({
         ),
         coins: state.coins + bonusCoins,
         happiness: Math.min(100, state.happiness + 5),
+        nameTags: earnedNameTag ? state.nameTags + 1 : state.nameTags,
         lastLevelUp: shouldLevelUp
           ? { oldLevel: activeCat.level, newLevel, bonusCoins }
           : state.lastLevelUp,
@@ -258,7 +281,14 @@ export const useCatStore = create<CatStore>((set, get) => ({
   },
 
   incrementStreak: () => {
-    set((state) => ({ streak: state.streak + 1 }));
+    const today = getTodayKey();
+    const lastDate = get().lastStreakDate;
+    // Only increment once per day
+    if (lastDate === today) return;
+    // If last streak was yesterday, continue streak; otherwise reset to 1
+    const yesterday = getYesterdayKey();
+    const newStreak = lastDate === yesterday ? get().streak + 1 : 1;
+    set({ streak: newStreak, lastStreakDate: today });
   },
 
   incrementMedsTaken: () => {
@@ -284,6 +314,7 @@ export const useCatStore = create<CatStore>((set, get) => ({
       activeCatId: 'cat_starter',
       coins: 0,
       streak: 0,
+      lastStreakDate: null,
       happiness: 80,
       totalMedsTaken: 0,
       nameTags: 3,
@@ -292,7 +323,7 @@ export const useCatStore = create<CatStore>((set, get) => ({
   },
 
   clearAllData: async () => {
-    await AsyncStorage.multiRemove([ONBOARDING_KEY, USER_PROFILE_KEY, CATS_KEY]);
+    await AsyncStorage.multiRemove([ONBOARDING_KEY, USER_PROFILE_KEY, CATS_KEY, 'kawaii-meds-cats', 'kawaii-meds-medications']);
     set({
       user: {
         name: '',
@@ -309,6 +340,7 @@ export const useCatStore = create<CatStore>((set, get) => ({
       activeCatId: 'cat_starter',
       coins: 0,
       streak: 0,
+      lastStreakDate: null,
       happiness: 80,
       totalMedsTaken: 0,
       nameTags: 3,
@@ -324,7 +356,7 @@ export const useCatStore = create<CatStore>((set, get) => ({
   },
 
   // Legacy compatibility stubs
-  feedPet: () => {
+  feedCat: () => {
     set((state) => ({
       happiness: Math.min(100, state.happiness + 10),
     }));
@@ -339,7 +371,27 @@ export const useCatStore = create<CatStore>((set, get) => ({
   },
 
   equipItem: () => {},
-}));
+    }),
+    {
+      name: 'kawaii-meds-cats',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        user: state.user,
+        cats: state.cats,
+        activeCatId: state.activeCatId,
+        coins: state.coins,
+        streak: state.streak,
+        lastStreakDate: state.lastStreakDate,
+        totalMedsTaken: state.totalMedsTaken,
+        happiness: state.happiness,
+        nameTags: state.nameTags,
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.isLoading = false;
+        }
+      },
+    }
+  )
+);
 
-// Re-export as usePetStore for backward compatibility
-export const usePetStore = useCatStore;

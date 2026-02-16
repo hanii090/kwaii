@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { Shadows } from '../../constants/theme';
+import { ClipboardIcon, CheckIcon, SparkleIcon } from '../icons/KawaiiIcons';
 
 const cocoaImage = require('../../../assets/images/cocoa.webp');
 
@@ -14,12 +15,12 @@ export default function CatWithListIllustration({ width = 220, height = 220 }: P
     <View style={[styles.container, { width, height }]}>
       {/* Clipboard decoration */}
       <View style={styles.clipboardBg}>
-        <Text style={styles.clipboardEmoji}>📋</Text>
+        <ClipboardIcon size={26} />
       </View>
 
       {/* Check decoration */}
       <View style={styles.checkBg}>
-        <Text style={styles.checkEmoji}>✅</Text>
+        <CheckIcon size={22} />
       </View>
 
       {/* Main cat image */}
@@ -28,8 +29,12 @@ export default function CatWithListIllustration({ width = 220, height = 220 }: P
       </View>
 
       {/* Decorations */}
-      <Text style={[styles.decor, { top: 8, left: 20 }]}>🌿</Text>
-      <Text style={[styles.decor, { bottom: 20, right: 15 }]}>✨</Text>
+      <View style={[styles.decor, { top: 8, left: 20 }]}>
+        <SparkleIcon size={18} color="#B8D8BA" />
+      </View>
+      <View style={[styles.decor, { bottom: 20, right: 15 }]}>
+        <SparkleIcon size={18} />
+      </View>
     </View>
   );
 }

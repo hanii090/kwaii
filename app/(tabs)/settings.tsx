@@ -26,6 +26,20 @@ import { useCatStore } from '../../src/stores/catStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
 import { useNotificationStore } from '../../src/stores/notificationStore';
 import { NotificationService } from '../../src/services/notificationService';
+import { usePremiumStore } from '../../src/stores/premiumStore';
+import PaywallModal from '../../src/components/modals/PaywallModal';
+import {
+  MedPillIcon,
+  CelebrationIcon,
+  StreakFlameIcon,
+  SadCatIcon,
+  ChartIcon,
+  MoonIcon,
+  CrownIcon,
+  RestoreIcon,
+  ClipboardIcon,
+  SunIcon,
+} from '../../src/components/icons/KawaiiIcons';
 
 export default function SettingsScreen() {
   const {
@@ -40,6 +54,17 @@ export default function SettingsScreen() {
   } = useCatStore();
   const activeCat = cats.find((c) => c.id === activeCatId) ?? cats[0];
   const { medications } = useMedicationStore();
+  const {
+    isPremium,
+    isLoading: premiumLoading,
+    presentPaywall,
+    presentCustomerCenter,
+    restore,
+    isTestMode,
+    showFallbackPaywall,
+    setShowFallbackPaywall,
+    setPremium,
+  } = usePremiumStore();
   const {
     preferences: notifPrefs,
     permissionStatus,
@@ -77,6 +102,26 @@ export default function SettingsScreen() {
     setEditingCatName(false);
   };
 
+  const handlePresentPaywall = async () => {
+    const success = await presentPaywall();
+    if (success) {
+      Alert.alert('Welcome to Premium! \u{1F451}', 'All cats are now free to claim!');
+    }
+  };
+
+  const handleRestore = async () => {
+    const success = await restore();
+    if (success) {
+      Alert.alert('Restored!', 'Your premium access has been restored.');
+    } else {
+      Alert.alert('Nothing to Restore', 'No previous purchases found.');
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    await presentCustomerCenter();
+  };
+
   const handleClearData = () => {
     Alert.alert(
       '⚠️ Clear ALL Data?',
@@ -97,11 +142,64 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <PaywallModal
+        visible={showFallbackPaywall}
+        isLoading={premiumLoading}
+        onPurchase={() => {
+          setPremium(true);
+          setShowFallbackPaywall(false);
+          Alert.alert('Welcome to Premium! \u{1F451}', 'All cats are now free to claim!');
+        }}
+        onRestore={async () => {
+          const success = await restore();
+          if (success) {
+            setShowFallbackPaywall(false);
+            Alert.alert('Restored!', 'Your premium access has been restored.');
+          } else {
+            Alert.alert('Nothing to Restore', 'No previous purchases found.');
+          }
+        }}
+        onClose={() => setShowFallbackPaywall(false)}
+      />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.screenTitle}>Settings</Text>
+
+        {/* Premium Section */}
+        <Text style={styles.sectionLabel}>PREMIUM</Text>
+        {isPremium ? (
+          <View style={styles.card}>
+            <View style={styles.row}>
+              <CrownIcon size={20} />
+              <Text style={styles.rowLabel}>Kawaii Premium</Text>
+              <View style={styles.premiumActiveBadge}>
+                <Text style={styles.premiumActiveText}>{isTestMode ? 'Test' : 'Active'}</Text>
+              </View>
+            </View>
+            <View style={styles.divider} />
+            <TouchableOpacity style={styles.row} onPress={handleManageSubscription}>
+              <ClipboardIcon size={20} />
+              <Text style={styles.rowLabel}>Manage Subscription</Text>
+              <ChevronRight size={16} color={Colors.lightText} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.card}>
+            <TouchableOpacity style={styles.row} onPress={handlePresentPaywall}>
+              <CrownIcon size={20} />
+              <Text style={styles.rowLabel}>Unlock Premium</Text>
+              <ChevronRight size={16} color={Colors.lightText} />
+            </TouchableOpacity>
+            <View style={styles.divider} />
+            <TouchableOpacity style={styles.row} onPress={handleRestore}>
+              <RestoreIcon size={20} />
+              <Text style={styles.rowLabel}>Restore Purchases</Text>
+              <ChevronRight size={16} color={Colors.lightText} />
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Profile Section */}
         <Text style={styles.sectionLabel}>PROFILE</Text>
@@ -132,13 +230,13 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.divider} />
           <View style={styles.row}>
-            <Text style={styles.rowIcon}>📊</Text>
+            <ChartIcon size={20} />
             <Text style={styles.rowLabel}>Lifetime Meds Taken</Text>
             <Text style={styles.rowValue}>{totalMedsTaken}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.row}>
-            <Text style={styles.rowIcon}>🔥</Text>
+            <StreakFlameIcon size={20} />
             <Text style={styles.rowLabel}>Best Streak</Text>
             <Text style={styles.rowValue}>{streak} days</Text>
           </View>
@@ -170,7 +268,7 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.divider} />
           <View style={styles.row}>
-            <Text style={styles.rowIcon}>💊</Text>
+            <MedPillIcon size={20} />
             <Text style={styles.rowLabel}>Medication Reminders</Text>
             <Switch
               value={notifPrefs.medicationReminders}
@@ -182,7 +280,7 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.divider} />
           <View style={styles.row}>
-            <Text style={styles.rowIcon}>🎉</Text>
+            <CelebrationIcon size={20} />
             <Text style={styles.rowLabel}>Celebrations</Text>
             <Switch
               value={notifPrefs.celebrations}
@@ -194,7 +292,7 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.divider} />
           <View style={styles.row}>
-            <Text style={styles.rowIcon}>🔥</Text>
+            <StreakFlameIcon size={20} />
             <Text style={styles.rowLabel}>Streak Milestones</Text>
             <Switch
               value={notifPrefs.streakMilestones}
@@ -206,7 +304,7 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.divider} />
           <View style={styles.row}>
-            <Text style={styles.rowIcon}>😿</Text>
+            <SadCatIcon size={20} />
             <Text style={styles.rowLabel}>Encouragement</Text>
             <Switch
               value={notifPrefs.encouragement}
@@ -218,7 +316,7 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.divider} />
           <View style={styles.row}>
-            <Text style={styles.rowIcon}>📊</Text>
+            <ChartIcon size={20} />
             <Text style={styles.rowLabel}>Daily Summary</Text>
             <Switch
               value={notifPrefs.dailySummary}
@@ -232,7 +330,7 @@ export default function SettingsScreen() {
 
         <View style={styles.card}>
           <View style={styles.row}>
-            <Text style={styles.rowIcon}>🌙</Text>
+            <MoonIcon size={20} />
             <Text style={styles.rowLabel}>Quiet Hours</Text>
             <Switch
               value={notifPrefs.quietHoursEnabled}
@@ -245,7 +343,7 @@ export default function SettingsScreen() {
             <>
               <View style={styles.divider} />
               <View style={styles.row}>
-                <Text style={styles.rowIcon}>⏰</Text>
+                <View style={styles.rowIconWrap}><SunIcon size={18} /></View>
                 <Text style={styles.rowLabel}>Quiet Hours</Text>
                 <Text style={styles.rowValue}>
                   {notifPrefs.quietHoursStart}:00 - {notifPrefs.quietHoursEnd}:00
@@ -347,6 +445,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     gap: Spacing.sm,
   },
+  rowIconWrap: {
+    width: 22,
+    alignItems: 'center' as const,
+  },
   rowIcon: {
     fontSize: 18,
     width: 22,
@@ -405,5 +507,16 @@ const styles = StyleSheet.create({
     color: Colors.lightText,
     marginTop: Spacing.lg,
     marginBottom: Spacing.md,
+  },
+  premiumActiveBadge: {
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.full,
+  },
+  premiumActiveText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#388E3C',
   },
 });

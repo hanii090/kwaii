@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { Shadows } from '../../constants/theme';
+import { NotifBellIcon, SparkleIcon, MedPillIcon } from '../icons/KawaiiIcons';
 
 const midnightVoidImage = require('../../../assets/images/midnight-void.webp');
 
@@ -14,10 +15,10 @@ export default function CatWithBellIllustration({ width = 220, height = 220 }: P
     <View style={[styles.container, { width, height }]}>
       {/* Bell decorations */}
       <View style={styles.bellBg}>
-        <Text style={styles.bellEmoji}>🔔</Text>
+        <NotifBellIcon size={26} />
       </View>
       <View style={styles.bellBg2}>
-        <Text style={styles.bellEmoji2}>🔔</Text>
+        <NotifBellIcon size={20} />
       </View>
 
       {/* Main cat image */}
@@ -26,9 +27,15 @@ export default function CatWithBellIllustration({ width = 220, height = 220 }: P
       </View>
 
       {/* Sound wave decorations */}
-      <Text style={[styles.decor, { top: 5, right: 20 }]}>🎵</Text>
-      <Text style={[styles.decor, { bottom: 15, left: 15 }]}>✨</Text>
-      <Text style={[styles.decor, { top: 15, left: 10 }]}>💊</Text>
+      <View style={[styles.decor, { top: 5, right: 20 }]}>
+        <SparkleIcon size={18} color="#B8D8BA" />
+      </View>
+      <View style={[styles.decor, { bottom: 15, left: 15 }]}>
+        <SparkleIcon size={16} />
+      </View>
+      <View style={[styles.decor, { top: 15, left: 10 }]}>
+        <MedPillIcon size={18} />
+      </View>
     </View>
   );
 }

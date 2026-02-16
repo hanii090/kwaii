@@ -1,10 +1,13 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Animated,
+  Easing,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -16,12 +19,39 @@ import { useNotificationStore } from '../../src/stores/notificationStore';
 import { NotificationService } from '../../src/services/notificationService';
 import { useAnimationTrigger } from '../../src/hooks/useAnimationTrigger';
 import MedicationCard from '../../src/components/MedicationCard';
-import ConfettiOverlay from '../../src/components/ConfettiOverlay';
-import RewardToast from '../../src/components/RewardToast';
-import LevelUpModal from '../../src/components/LevelUpModal';
+
 import CatIllustration from '../../src/components/CatIllustration';
+import AnimatedCat from '../../src/components/AnimatedCat';
+import type { CatAnimationType } from '../../src/components/AnimatedCat';
+import Sparkles from '../../src/components/animations/Sparkles';
+import GlowEffect from '../../src/components/animations/GlowEffect';
 import StreakFire from '../../src/components/animations/StreakFire';
 import XPBarFill from '../../src/components/animations/XPBarFill';
+import ConfettiOverlay from '@/components/ConfettiOverlay';
+import RewardToast from '@/components/RewardToast';
+import LevelUpModal from '@/components/LevelUpModal';
+import {
+  CoinIcon,
+  MedPillIcon,
+  SunriseIcon,
+  SunIcon,
+  SunsetIcon,
+  MoonIcon,
+  CelebrationIcon,
+  SparkleIcon,
+  StarIcon,
+  CrownIcon,
+  HeartIcon,
+} from '../../src/components/icons/KawaiiIcons';
+
+type TimeOfDay = 'sunrise' | 'sun' | 'sunset' | 'moon';
+
+const GROUP_ICONS: Record<TimeOfDay, React.ComponentType<{ size?: number }>> = {
+  sunrise: SunriseIcon,
+  sun: SunIcon,
+  sunset: SunsetIcon,
+  moon: MoonIcon,
+};
 
 export default function HomeScreen() {
   const {
@@ -37,15 +67,137 @@ export default function HomeScreen() {
     clearLevelUp,
   } = useCatStore();
   const activeCat = getActiveCat();
-  const { medications, markMedicationTaken } = useMedicationStore();
+  const { medications, markMedicationTaken, removeMedication } = useMedicationStore();
   const { onMedicationTaken } = useAnimationTrigger();
 
   const [showConfetti, setShowConfetti] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [catAnimation, setCatAnimation] = useState<CatAnimationType>(
+    activeCat.breed !== 'basic' ? 'idle' : 'none'
+  );
+  const isPremiumCat = activeCat.breed !== 'basic';
 
-  const takenCount = medications.filter((m) => m.taken).length;
-  const totalCount = medications.length;
+  // Animated cloud positions
+  const cloud1X = useRef(new Animated.Value(0)).current;
+  const cloud2X = useRef(new Animated.Value(0)).current;
+  const cloud3X = useRef(new Animated.Value(0)).current;
+  // Sun pulse
+  const sunScale = useRef(new Animated.Value(1)).current;
+  const sunGlow = useRef(new Animated.Value(0.4)).current;
+  // Tap interaction
+  const catBounce = useRef(new Animated.Value(0)).current;
+  const [hearts, setHearts] = useState<{ id: number; x: number; y: number }[]>([]);
+  const heartAnims = useRef<{ opacity: Animated.Value; translateY: Animated.Value }[]>([]);
+  const heartIdRef = useRef(0);
+
+  useEffect(() => {
+    // Floating clouds
+    const animateCloud = (anim: Animated.Value, duration: number, range: number) => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(anim, { toValue: range, duration, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(anim, { toValue: -range, duration, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        ])
+      ).start();
+    };
+    animateCloud(cloud1X, 6000, 12);
+    animateCloud(cloud2X, 8000, 8);
+    animateCloud(cloud3X, 7000, 10);
+
+    // Sun pulse
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(sunScale, { toValue: 1.08, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(sunScale, { toValue: 1, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    ).start();
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(sunGlow, { toValue: 0.7, duration: 2500, useNativeDriver: true }),
+        Animated.timing(sunGlow, { toValue: 0.4, duration: 2500, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
+  const handleCardTap = useCallback(() => {
+    // Bounce cat
+    Animated.sequence([
+      Animated.timing(catBounce, { toValue: -12, duration: 150, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      Animated.spring(catBounce, { toValue: 0, damping: 6, stiffness: 200, useNativeDriver: true }),
+    ]).start();
+
+    // Spawn hearts
+    const newHearts = Array.from({ length: 3 }, (_, i) => ({
+      id: heartIdRef.current++,
+      x: 40 + Math.random() * 60,
+      y: 10 + Math.random() * 20,
+    }));
+    const newAnims = newHearts.map(() => ({
+      opacity: new Animated.Value(1),
+      translateY: new Animated.Value(0),
+    }));
+    heartAnims.current = [...heartAnims.current, ...newAnims];
+    setHearts((prev) => [...prev, ...newHearts]);
+
+    newAnims.forEach((a, i) => {
+      Animated.parallel([
+        Animated.timing(a.translateY, { toValue: -60, duration: 800, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        Animated.timing(a.opacity, { toValue: 0, duration: 800, useNativeDriver: true }),
+      ]).start(() => {
+        setHearts((prev) => prev.filter((h) => h.id !== newHearts[i].id));
+      });
+    });
+
+    // Trigger happy animation for premium cats
+    if (isPremiumCat && catAnimation === 'idle') {
+      setCatAnimation('happy');
+      setTimeout(() => setCatAnimation('idle'), 1200);
+    }
+  }, [isPremiumCat, catAnimation]);
+
+  const LEVEL_ICON_COMPONENTS: React.ComponentType<{ size?: number }>[] = [
+    SparkleIcon, SparkleIcon, StarIcon, StarIcon, HeartIcon,
+    HeartIcon, StarIcon, StarIcon, CrownIcon, CrownIcon,
+  ];
+  const LevelIcon = LEVEL_ICON_COMPONENTS[Math.min(activeCat.level - 1, LEVEL_ICON_COMPONENTS.length - 1)];
+  const NextLevelIcon = LEVEL_ICON_COMPONENTS[Math.min(activeCat.level, LEVEL_ICON_COMPONENTS.length - 1)];
+
+  // Filter medications by today's day of week
+  const DAY_MAP = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'];
+  const todaysMeds = useMemo(() => {
+    const todayKey = DAY_MAP[new Date().getDay()];
+    return medications.filter((m) => !m.days || m.days.length === 0 || m.days.includes(todayKey));
+  }, [medications]);
+
+  // Group medications by time period
+  const groupedMeds = useMemo(() => {
+    const groups: { title: string; icon: TimeOfDay; meds: typeof todaysMeds }[] = [];
+    const morning: typeof todaysMeds = [];
+    const afternoon: typeof todaysMeds = [];
+    const evening: typeof todaysMeds = [];
+    const night: typeof todaysMeds = [];
+
+    for (const med of todaysMeds) {
+      const firstTime = med.times?.[0];
+      if (!firstTime) { morning.push(med); continue; }
+      const hour = parseInt(firstTime.split(':')[0], 10);
+      if (hour < 12) morning.push(med);
+      else if (hour < 17) afternoon.push(med);
+      else if (hour < 21) evening.push(med);
+      else night.push(med);
+    }
+
+    if (morning.length > 0) groups.push({ title: 'Morning', icon: 'sunrise', meds: morning });
+    if (afternoon.length > 0) groups.push({ title: 'Afternoon', icon: 'sun', meds: afternoon });
+    if (evening.length > 0) groups.push({ title: 'Evening', icon: 'sunset', meds: evening });
+    if (night.length > 0) groups.push({ title: 'Night', icon: 'moon', meds: night });
+
+    return groups;
+  }, [todaysMeds]);
+
+  const takenCount = todaysMeds.filter((m) => m.taken).length;
+  const totalCount = todaysMeds.length;
   const xpNeeded = activeCat.level * 100;
 
   const handleTakeMedication = useCallback(
@@ -82,17 +234,41 @@ export default function HomeScreen() {
 
         // Increment streak when all daily meds are completed
         const updatedMeds = useMedicationStore.getState().medications;
-        const allTaken = updatedMeds.length > 0 && updatedMeds.every((m) => m.taken);
+        const dayKey = DAY_MAP[new Date().getDay()];
+        const todaysUpdated = updatedMeds.filter((m) => !m.days || m.days.length === 0 || m.days.includes(dayKey));
+        const allTaken = todaysUpdated.length > 0 && todaysUpdated.every((m) => m.taken);
         if (allTaken) {
           incrementStreak();
         }
 
-        setToastMessage('✨ +10 XP, +5 Coins!');
+        setToastMessage('+10 XP, +5 Coins!');
         setShowToast(true);
         setShowConfetti(true);
+
+        // Trigger happy animation for premium cats
+        if (activeCat.breed !== 'basic') {
+          setCatAnimation('happy');
+          setTimeout(() => {
+            // Check for level up
+            const latestLevelUp = useCatStore.getState().lastLevelUp;
+            if (latestLevelUp) {
+              setCatAnimation('levelup');
+              setTimeout(() => setCatAnimation('idle'), 2000);
+            } else {
+              setCatAnimation('idle');
+            }
+          }, 1500);
+        }
       }
     },
     [markMedicationTaken, addXp, addCoins, incrementStreak, incrementMedsTaken, getActiveCat, onMedicationTaken]
+  );
+
+  const handleDeleteMedication = useCallback(
+    (id: string) => {
+      removeMedication(id);
+    },
+    [removeMedication]
   );
 
   const now = new Date();
@@ -142,7 +318,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <View style={styles.coinsBadge}>
               <View style={styles.coinIconCircleSm}>
-                <Text style={styles.coinIconEmoji}>🪙</Text>
+                <CoinIcon size={18} />
               </View>
               <Text style={styles.coinsCount}>{coins}</Text>
             </View>
@@ -150,18 +326,28 @@ export default function HomeScreen() {
         </View>
 
         {/* Cat Display Card */}
-        <View style={styles.catCard}>
+        <Pressable onPress={handleCardTap} style={styles.catCard}>
           {/* Sky gradient background */}
           <View style={styles.skyGradient}>
-            {/* Clouds */}
-            <View style={[styles.cloud, { top: 12, left: 20 }]}>
+            {/* Sun */}
+            <Animated.View style={[styles.sun, { transform: [{ scale: sunScale }] }]}>
+              <Animated.View style={[styles.sunGlow, { opacity: sunGlow }]} />
+              <View style={styles.sunCore} />
+            </Animated.View>
+
+            {/* Animated Clouds */}
+            <Animated.View style={[styles.cloud, { top: 14, left: 16, transform: [{ translateX: cloud1X }] }]}>
               <View style={styles.cloudPuff} />
               <View style={[styles.cloudPuff, styles.cloudPuffSmall]} />
-            </View>
-            <View style={[styles.cloud, { top: 8, right: 30 }]}>
+            </Animated.View>
+            <Animated.View style={[styles.cloud, { top: 28, left: '42%', transform: [{ translateX: cloud3X }] }]}>
+              <View style={[styles.cloudPuff, { width: 30, height: 14, borderRadius: 7 }]} />
+              <View style={[styles.cloudPuff, { width: 20, height: 12, borderRadius: 6, marginLeft: -8, marginTop: 2 }]} />
+            </Animated.View>
+            <Animated.View style={[styles.cloud, { top: 10, right: 24, transform: [{ translateX: cloud2X }] }]}>
               <View style={styles.cloudPuff} />
               <View style={[styles.cloudPuff, styles.cloudPuffSmall]} />
-            </View>
+            </Animated.View>
           </View>
 
           {/* Hills */}
@@ -175,39 +361,91 @@ export default function HomeScreen() {
           <View style={styles.catNameBadge}>
             <Text style={styles.catNameText}>{activeCat.name}</Text>
             <View style={styles.catLevelRow}>
-              <Text style={styles.catLevelStar}>⭐</Text>
+              <LevelIcon size={14} />
               <Text style={styles.catLevelText}>Level {activeCat.level}</Text>
             </View>
           </View>
 
-          {/* Cat illustration */}
-          <View style={styles.catIllustrationContainer}>
-            <CatIllustration
-              breed={activeCat.breed}
-              size={120}
-              state={activeCat.state}
-              showBackground={false}
-            />
-          </View>
+          {/* Cat illustration with bounce */}
+          <Animated.View style={[styles.catIllustrationContainer, { transform: [{ translateY: catBounce }] }]}>
+            {isPremiumCat ? (
+              <View style={{ position: 'relative' }}>
+                <GlowEffect
+                  visible={catAnimation === 'levelup'}
+                  color="#FFD700"
+                  size={120}
+                />
+                <AnimatedCat
+                  breed={activeCat.breed}
+                  animationType={catAnimation}
+                  isPremium={true}
+                  size={120}
+                  enableInteraction={true}
+                  onAnimationComplete={() => {
+                    if (catAnimation === 'happy' || catAnimation === 'levelup') {
+                      setCatAnimation('idle');
+                    }
+                  }}
+                />
+                <Sparkles visible={catAnimation === 'happy' || catAnimation === 'levelup'} />
+              </View>
+            ) : (
+              <CatIllustration
+                breed={activeCat.breed}
+                size={120}
+                state={activeCat.state}
+                showBackground={false}
+              />
+            )}
+            {/* Cat shadow */}
+            <View style={styles.catShadow} />
+          </Animated.View>
+
+          {/* Floating hearts on tap */}
+          {hearts.map((h, i) => {
+            const anim = heartAnims.current[heartAnims.current.length - hearts.length + i];
+            if (!anim) return null;
+            return (
+              <Animated.Text
+                key={h.id}
+                style={[
+                  styles.floatingHeart,
+                  {
+                    left: `${h.x}%`,
+                    bottom: 90 + h.y,
+                    opacity: anim.opacity,
+                    transform: [{ translateY: anim.translateY }],
+                  },
+                ]}
+              >
+                <HeartIcon size={16} color="#FFB4A2" />
+              </Animated.Text>
+            );
+          })}
 
           {/* Grass tufts */}
           <View style={styles.grassContainer}>
-            <Text style={styles.grassTuft}>🌿</Text>
-            <Text style={[styles.grassTuft, { left: '30%' }]}>🌱</Text>
-            <Text style={[styles.grassTuft, { right: '25%' }]}>🌿</Text>
+            <SparkleIcon size={12} color="#B8D8BA" />
+            <SparkleIcon size={10} color="#B8D8BA" />
+            <StarIcon size={11} color="#B8D8BA" />
+            <SparkleIcon size={12} color="#B8D8BA" />
+            <SparkleIcon size={10} color="#B8D8BA" />
           </View>
 
           {/* XP Bar */}
           <View style={styles.xpBarContainer}>
-            <XPBarFill
-              currentXP={activeCat.currentXP}
-              maxXP={xpNeeded}
-              level={activeCat.level}
-              showLevelUp={!!lastLevelUp}
-              height={10}
-            />
+            <View style={styles.xpLevelRow}>
+              <LevelIcon size={14} />
+              <Text style={styles.xpLevelLabel}>Level {activeCat.level}</Text>
+              <Text style={styles.xpArrow}>→</Text>
+              <NextLevelIcon size={14} />
+            </View>
+            <View style={styles.xpTrack}>
+              <View style={[styles.xpFill, { width: `${xpNeeded > 0 ? Math.min((activeCat.currentXP / xpNeeded) * 100, 100) : 0}%` }]} />
+            </View>
+            <Text style={styles.xpText}>{activeCat.currentXP} / {xpNeeded} XP</Text>
           </View>
-        </View>
+        </Pressable>
 
         {/* Today's Medicine */}
         <View style={styles.medsSection}>
@@ -217,7 +455,7 @@ export default function HomeScreen() {
           {medications.length === 0 ? (
             <View style={styles.emptyState}>
               <View style={styles.emptyIconCircle}>
-                <Text style={styles.emptyEmoji}>💊</Text>
+                <MedPillIcon size={28} />
               </View>
               <Text style={styles.emptyTitle}>No medications yet</Text>
               <Text style={styles.emptyText}>
@@ -232,6 +470,12 @@ export default function HomeScreen() {
                 <Plus size={18} color={Colors.white} strokeWidth={3} />
                 <Text style={styles.addButtonText}>Add Medication</Text>
               </TouchableOpacity>
+            </View>
+          ) : totalCount === 0 ? (
+            <View style={styles.emptyState}>
+              <MoonIcon size={28} />
+              <Text style={styles.emptyTitle}>No meds scheduled today</Text>
+              <Text style={styles.emptyText}>Enjoy your day off!</Text>
             </View>
           ) : (
             <>
@@ -261,13 +505,34 @@ export default function HomeScreen() {
                 </View>
               )}
 
-              {medications.map((med) => (
-                <MedicationCard
-                  key={med.id}
-                  medication={med}
-                  onTakeMedication={handleTakeMedication}
-                />
-              ))}
+              {/* All done celebration */}
+              {takenCount === totalCount && totalCount > 0 && (
+                <View style={styles.allDoneCard}>
+                  <CelebrationIcon size={28} />
+                  <Text style={styles.allDoneTitle}>All done for today!</Text>
+                  <Text style={styles.allDoneText}>Great job taking all your medications.</Text>
+                </View>
+              )}
+
+              {groupedMeds.map((group) => {
+                const GroupIcon = GROUP_ICONS[group.icon];
+                return (
+                  <View key={group.title}>
+                    <View style={styles.groupTitleRow}>
+                      <GroupIcon size={16} />
+                      <Text style={styles.groupTitle}>{group.title}</Text>
+                    </View>
+                    {group.meds.map((med) => (
+                      <MedicationCard
+                        key={med.id}
+                        medication={med}
+                        onTakeMedication={handleTakeMedication}
+                        onDeleteMedication={handleDeleteMedication}
+                      />
+                    ))}
+                  </View>
+                );
+              })}
             </>
           )}
         </View>
@@ -275,19 +540,6 @@ export default function HomeScreen() {
         <View style={{ height: 120 }} />
       </ScrollView>
 
-      {/* Add New Medication Button */}
-      {medications.length > 0 && (
-        <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity
-            style={styles.bottomAddButton}
-            activeOpacity={0.85}
-            onPress={() => router.push('/add-medication')}
-          >
-            <Plus size={20} color={Colors.white} strokeWidth={3} />
-            <Text style={styles.bottomAddButtonText}>Add New Medication</Text>
-          </TouchableOpacity>
-        </View>
-      )}
     </SafeAreaView>
   );
 }
@@ -373,31 +625,57 @@ const styles = StyleSheet.create({
 
   // Cat Display Card
   catCard: {
-    borderRadius: BorderRadius.xl,
-    borderWidth: 2,
-    borderColor: Colors.primary,
+    borderRadius: 24,
     overflow: 'hidden',
     marginBottom: Spacing.lg,
-    height: 260,
-    position: 'relative',
+    height: 340,
+    position: 'relative' as const,
+    backgroundColor: '#C8DD9F',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 8,
   },
   skyGradient: {
-    position: 'absolute',
+    position: 'absolute' as const,
     top: 0,
     left: 0,
     right: 0,
-    height: 140,
-    backgroundColor: '#B8E6E8',
+    height: 160,
+    backgroundColor: '#A8DBE0',
+  },
+  sun: {
+    position: 'absolute' as const,
+    top: 10,
+    right: 20,
+    width: 44,
+    height: 44,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  sunGlow: {
+    position: 'absolute' as const,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FFE082',
+  },
+  sunCore: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFD54F',
   },
   cloud: {
-    position: 'absolute',
-    flexDirection: 'row',
+    position: 'absolute' as const,
+    flexDirection: 'row' as const,
   },
   cloudPuff: {
     width: 40,
     height: 20,
     borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.7)',
+    backgroundColor: 'rgba(255,255,255,0.75)',
   },
   cloudPuffSmall: {
     width: 28,
@@ -407,91 +685,171 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   hills: {
-    position: 'absolute',
+    position: 'absolute' as const,
     bottom: 0,
     left: 0,
     right: 0,
-    height: 140,
+    height: 180,
   },
   hill: {
-    position: 'absolute',
+    position: 'absolute' as const,
     bottom: 0,
-    width: '120%',
-    height: 100,
+    width: '120%' as const,
+    height: 110,
     borderTopLeftRadius: 200,
     borderTopRightRadius: 200,
   },
   hillFar: {
-    backgroundColor: '#8BC89C',
-    bottom: 50,
+    backgroundColor: '#7EC49A',
+    bottom: 70,
     left: -30,
   },
   hillMid: {
-    backgroundColor: '#A8D5A8',
-    bottom: 25,
+    backgroundColor: '#9DD4A0',
+    bottom: 35,
     right: -20,
   },
   hillNear: {
-    backgroundColor: '#C8DD9F',
+    backgroundColor: '#C0D98E',
     bottom: 0,
     left: -10,
   },
 
   catNameBadge: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    borderRadius: BorderRadius.md,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    position: 'absolute' as const,
+    top: 14,
+    left: 14,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   catNameText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: Colors.primary,
+    letterSpacing: 0.2,
   },
   catLevelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 4,
     marginTop: 2,
   },
   catLevelStar: {
-    fontSize: 11,
+    fontSize: 12,
   },
   catLevelText: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
     color: Colors.secondary,
   },
 
   catIllustrationContainer: {
-    position: 'absolute',
-    bottom: 60,
-    alignSelf: 'center',
+    position: 'absolute' as const,
+    bottom: 100,
+    alignSelf: 'center' as const,
     zIndex: 5,
+    alignItems: 'center' as const,
+  },
+  catShadow: {
+    width: 80,
+    height: 12,
+    borderRadius: 40,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    alignSelf: 'center' as const,
+    marginTop: -4,
+  },
+  floatingHeart: {
+    position: 'absolute' as const,
+    fontSize: 22,
+    zIndex: 20,
+  },
+  catNameLabel: {
+    position: 'absolute' as const,
+    bottom: 88,
+    alignSelf: 'center' as const,
+    zIndex: 10,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  catNameLabelText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.primary,
+    letterSpacing: 0.3,
   },
 
   grassContainer: {
-    position: 'absolute',
-    bottom: 40,
+    position: 'absolute' as const,
+    bottom: 68,
     left: 0,
     right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: 'row' as const,
+    justifyContent: 'space-around' as const,
+    paddingHorizontal: 20,
   },
   grassTuft: {
-    fontSize: 14,
+    fontSize: 16,
   },
 
   xpBarContainer: {
-    position: 'absolute',
-    bottom: 8,
+    position: 'absolute' as const,
+    bottom: 10,
     left: 16,
     right: 16,
     zIndex: 10,
+    backgroundColor: 'rgba(255,255,255,0.75)',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  xpLevelRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    gap: 4,
+    marginBottom: 6,
+  },
+  xpLevelIcon: {
+    fontSize: 14,
+  },
+  xpLevelLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.secondary,
+  },
+  xpArrow: {
+    fontSize: 12,
+    color: Colors.lightText,
+    fontWeight: '600',
+  },
+  xpTrack: {
+    width: '100%' as const,
+    height: 10,
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    borderRadius: 5,
+    overflow: 'hidden' as const,
+  },
+  xpFill: {
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: Colors.accent,
+  },
+  xpText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.lightText,
+    textAlign: 'center' as const,
+    marginTop: 4,
   },
 
   // Medications Section
@@ -592,6 +950,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: Colors.white,
+  },
+
+  // All Done Card
+  allDoneCard: {
+    backgroundColor: '#E8F5E9',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+    ...Shadows.small,
+  },
+  allDoneEmoji: {
+    fontSize: 28,
+    marginBottom: Spacing.xs,
+  },
+  allDoneTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#388E3C',
+    marginBottom: 2,
+  },
+  allDoneText: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: '#4CAF50',
+  },
+
+  // Group Title
+  groupTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  groupTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: Colors.secondary,
   },
 
   // Bottom Add Button

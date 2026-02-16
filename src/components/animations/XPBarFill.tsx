@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import { Colors } from '../../constants/theme';
+import { SparkleIcon, CelebrationIcon } from '../icons/KawaiiIcons';
 
 interface XPBarFillProps {
   currentXP: number;
@@ -78,7 +79,11 @@ export default function XPBarFill({ currentXP, maxXP, level, showLevelUp = false
 
       {showLevelUp && (
         <Animated.View style={[styles.sparkleContainer, { opacity: sparkleOpacity, transform: [{ scale: sparkleScale }] }]}>
-          <Text style={styles.sparkleText}>✨🎉✨</Text>
+          <View style={{ flexDirection: 'row', gap: 2 }}>
+            <SparkleIcon size={20} />
+            <CelebrationIcon size={20} />
+            <SparkleIcon size={20} />
+          </View>
         </Animated.View>
       )}
     </View>

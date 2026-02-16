@@ -7,7 +7,10 @@ export type AnimationType =
   | 'xpFill'
   | 'levelUp'
   | 'streakFire'
-  | 'catPurchase';
+  | 'catPurchase'
+  | 'catIdle'
+  | 'catHappy'
+  | 'catLevelUp';
 
 export interface AnimationEvent {
   type: AnimationType;
@@ -42,6 +45,8 @@ interface AnimationStore {
   }) => void;
 
   triggerCatPurchase: (catName: string) => void;
+  triggerCatHappy: () => void;
+  triggerCatLevelUp: () => void;
 
   startAnimation: (type: AnimationType) => void;
   completeAnimation: (type: AnimationType) => void;
@@ -87,6 +92,24 @@ export const useAnimationStore = create<AnimationStore>((set, get) => ({
       isPlaying: true,
       toastMessage: `🎉 ${catName} unlocked!`,
     });
+  },
+
+  triggerCatHappy: () => {
+    set((state) => ({
+      activeAnimations: state.activeAnimations.includes('catHappy')
+        ? state.activeAnimations
+        : [...state.activeAnimations, 'catHappy'],
+      isPlaying: true,
+    }));
+  },
+
+  triggerCatLevelUp: () => {
+    set((state) => ({
+      activeAnimations: state.activeAnimations.includes('catLevelUp')
+        ? state.activeAnimations
+        : [...state.activeAnimations, 'catLevelUp'],
+      isPlaying: true,
+    }));
   },
 
   startAnimation: (type) => {

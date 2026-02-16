@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Lock } from 'lucide-react-native';
 import { Colors, Spacing, BorderRadius, Shadows } from '../constants/theme';
+import { CoinIcon } from './icons/KawaiiIcons';
 import type { ShopItem } from '../data/shopItems';
 
 interface ShopItemCardProps {
@@ -47,7 +48,7 @@ export default function ShopItemCard({
       <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
 
       <View style={styles.priceRow}>
-        <Text style={styles.coinIcon}>🪙</Text>
+        <CoinIcon size={14} />
         <Text style={[styles.price, owned && styles.priceOwned]}>
           {owned ? 'Owned' : item.price}
         </Text>

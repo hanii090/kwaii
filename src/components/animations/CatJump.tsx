@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
+import { PawIcon, SparkleIcon, StarIcon, HeartIcon, HappyCatMoodIcon } from '../icons/KawaiiIcons';
 
 interface CatJumpProps {
   visible: boolean;
@@ -82,18 +83,22 @@ export default function CatJump({ visible, onComplete, size = 120, loops = 3 }: 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
       <Animated.View style={[styles.heart, { opacity: heartOpacity }]}>
-        <Text style={styles.heartText}>💕</Text>
+        <HeartIcon size={20} />
       </Animated.View>
 
       <Animated.View style={[styles.catBody, { transform: [{ translateY }, { scaleX }, { scaleY }] }]}>
         <Animated.View style={[styles.paw, { transform: [{ rotate: pawSpin }] }]}>
-          <Text style={{ fontSize: size * 0.15 }}>🐾</Text>
+          <PawIcon size={size * 0.15} />
         </Animated.View>
-        <Text style={[styles.catFace, { fontSize: size * 0.55 }]}>😸</Text>
+        <HappyCatMoodIcon size={size * 0.55} />
       </Animated.View>
 
-      <Text style={[styles.sparkle, styles.sparkleLeft]}>✨</Text>
-      <Text style={[styles.sparkle, styles.sparkleRight]}>⭐</Text>
+      <View style={[styles.sparkleLeft]}>
+        <SparkleIcon size={16} />
+      </View>
+      <View style={[styles.sparkleRight]}>
+        <StarIcon size={16} />
+      </View>
     </View>
   );
 }

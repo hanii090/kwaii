@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NotificationService } from '../services/notificationService';
 import { useNotificationStore } from './notificationStore';
 import { useCatStore } from './catStore';
@@ -16,24 +18,41 @@ export interface Medication {
   takenAt: string | null;
   reminderEnabled: boolean;
   notificationIds: string[];
+  days: string[]; // e.g. ['M','Tu','W','Th','F','Sa','Su']
+}
+
+export interface DayHistory {
+  date: string; // yyyy-MM-dd
+  total: number;
+  taken: number;
+  medications: { id: string; name: string; icon: string; taken: boolean }[];
 }
 
 interface MedicationStore {
   medications: Medication[];
-  addMedication: (medication: Omit<Medication, 'id' | 'taken' | 'takenAt' | 'reminderEnabled' | 'notificationIds'>) => void;
+  lastResetDate: string | null; // yyyy-MM-dd of last daily reset
+  history: DayHistory[]; // past day records for calendar
+  addMedication: (medication: Omit<Medication, 'id' | 'taken' | 'takenAt' | 'reminderEnabled' | 'notificationIds' | 'days'> & { days?: string[] }) => void;
   removeMedication: (id: string) => void;
   markMedicationTaken: (id: string) => boolean;
   resetDaily: () => void;
+  checkAndResetIfNewDay: () => void;
 }
 
-let idCounter = 0;
+const getTodayKey = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
-export const useMedicationStore = create<MedicationStore>((set, get) => ({
-  medications: [],
+export const useMedicationStore = create<MedicationStore>()(
+  persist(
+    (set, get) => ({
+      medications: [],
+      lastResetDate: null,
+      history: [],
 
-  addMedication: async (medication) => {
-    idCounter += 1;
-    const id = `${Date.now()}_${idCounter}`;
+      addMedication: async (medication) => {
+    const id = `med_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     // Schedule notifications if enabled
     let notificationIds: string[] = [];
@@ -57,6 +76,7 @@ export const useMedicationStore = create<MedicationStore>((set, get) => ({
         {
           ...medication,
           id,
+          days: medication.days ?? ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'],
           taken: false,
           takenAt: null,
           reminderEnabled: true,
@@ -131,16 +151,60 @@ export const useMedicationStore = create<MedicationStore>((set, get) => ({
   },
 
   resetDaily: () => {
-    set((state) => ({
-      medications: state.medications.map((m) => ({
-        ...m,
-        taken: false,
-        takenAt: null,
-      })),
-    }));
+    // Save today's snapshot to history before resetting
+    const meds = get().medications;
+    const today = getTodayKey();
+    const total = meds.length;
+    const taken = meds.filter((m) => m.taken).length;
+
+    if (total > 0) {
+      const snapshot: DayHistory = {
+        date: get().lastResetDate || today,
+        total,
+        taken,
+        medications: meds.map((m) => ({ id: m.id, name: m.name, icon: m.icon, taken: m.taken })),
+      };
+
+      set((state) => {
+        // Avoid duplicate history entries for the same date
+        const filtered = state.history.filter((h) => h.date !== snapshot.date);
+        // Keep last 90 days of history
+        const trimmed = [...filtered, snapshot].slice(-90);
+        return {
+          history: trimmed,
+          medications: state.medications.map((m) => ({
+            ...m,
+            taken: false,
+            takenAt: null,
+          })),
+          lastResetDate: today,
+        };
+      });
+    } else {
+      set({ lastResetDate: today });
+    }
 
     // Update badge count to total medications
-    const total = get().medications.length;
-    NotificationService.updateBadgeCount(total).catch(() => {});
+    const totalMeds = get().medications.length;
+    NotificationService.updateBadgeCount(totalMeds).catch(() => {});
   },
-}));
+
+      checkAndResetIfNewDay: () => {
+        const today = getTodayKey();
+        const lastReset = get().lastResetDate;
+        if (lastReset !== today) {
+          get().resetDaily();
+        }
+      },
+    }),
+    {
+      name: 'kawaii-meds-medications',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        medications: state.medications,
+        lastResetDate: state.lastResetDate,
+        history: state.history,
+      }),
+    }
+  )
+);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { Shadows } from '../../constants/theme';
+import { SunIcon, MedPillIcon, SparkleIcon } from '../icons/KawaiiIcons';
 
 const snowballImage = require('../../../assets/images/snowball.webp');
 
@@ -14,7 +15,7 @@ export default function CatWithClockIllustration({ width = 220, height = 220 }: 
     <View style={[styles.container, { width, height }]}>
       {/* Clock decoration behind cat */}
       <View style={styles.clockBg}>
-        <Text style={styles.clockEmoji}>⏰</Text>
+        <SunIcon size={30} />
       </View>
 
       {/* Main cat image */}
@@ -23,9 +24,15 @@ export default function CatWithClockIllustration({ width = 220, height = 220 }: 
       </View>
 
       {/* Floating pills */}
-      <Text style={[styles.decor, { top: 10, right: 15 }]}>💊</Text>
-      <Text style={[styles.decor, { bottom: 25, left: 10 }]}>💊</Text>
-      <Text style={[styles.decor, { top: 5, left: 25 }]}>✨</Text>
+      <View style={[styles.decor, { top: 10, right: 15 }]}>
+        <MedPillIcon size={20} />
+      </View>
+      <View style={[styles.decor, { bottom: 25, left: 10 }]}>
+        <MedPillIcon size={20} />
+      </View>
+      <View style={[styles.decor, { top: 5, left: 25 }]}>
+        <SparkleIcon size={18} />
+      </View>
     </View>
   );
 }

@@ -5,19 +5,22 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
+  Alert,
 } from 'react-native';
-import { Check, Clock } from 'lucide-react-native';
+import { Check, Clock, Trash2 } from 'lucide-react-native';
 import { Medication } from '../stores/medicationStore';
 import { Colors, Spacing, BorderRadius, Shadows } from '../constants/theme';
 
 interface MedicationCardProps {
   medication: Medication;
   onTakeMedication: (id: string) => void;
+  onDeleteMedication?: (id: string) => void;
 }
 
 export default function MedicationCard({
   medication,
   onTakeMedication,
+  onDeleteMedication,
 }: MedicationCardProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -40,6 +43,22 @@ export default function MedicationCard({
     onTakeMedication(medication.id);
   };
 
+  const handleLongPress = () => {
+    if (!onDeleteMedication) return;
+    Alert.alert(
+      `Delete ${medication.name}?`,
+      'This will remove the medication and cancel its reminders.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => onDeleteMedication(medication.id),
+        },
+      ]
+    );
+  };
+
   return (
     <Animated.View
       style={[
@@ -48,7 +67,12 @@ export default function MedicationCard({
         { transform: [{ scale: scaleAnim }] },
       ]}
     >
-      <View style={styles.leftSection}>
+      <TouchableOpacity
+        style={styles.leftSection}
+        onLongPress={handleLongPress}
+        activeOpacity={0.8}
+        delayLongPress={500}
+      >
         <View
           style={[
             styles.iconContainer,
@@ -71,7 +95,7 @@ export default function MedicationCard({
             <Text style={styles.time}>{medication.scheduledTime}</Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
 
       <TouchableOpacity
         style={[

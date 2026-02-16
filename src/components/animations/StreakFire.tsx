@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
+import { View, StyleSheet, Animated, Easing } from 'react-native';
+import { StreakFlameIcon } from '../icons/KawaiiIcons';
 
 interface StreakFireProps {
   streak: number;
@@ -14,11 +15,10 @@ function getFireScale(streak: number): number {
   return 0.8;
 }
 
-function getFireEmoji(streak: number): string {
-  if (streak >= 30) return '🔥🔥🔥';
-  if (streak >= 14) return '🔥🔥';
-  if (streak >= 7) return '🔥';
-  return '🔥';
+function getFireCount(streak: number): number {
+  if (streak >= 30) return 3;
+  if (streak >= 14) return 2;
+  return 1;
 }
 
 export default function StreakFire({ streak, size = 24 }: StreakFireProps) {
@@ -28,7 +28,7 @@ export default function StreakFire({ streak, size = 24 }: StreakFireProps) {
   const wobble = useRef(new Animated.Value(0)).current;
 
   const fireScale = getFireScale(streak);
-  const fireEmoji = getFireEmoji(streak);
+  const fireCount = getFireCount(streak);
 
   useEffect(() => {
     if (streak <= 0) return;
@@ -77,7 +77,7 @@ export default function StreakFire({ streak, size = 24 }: StreakFireProps) {
   if (streak <= 0) {
     return (
       <View style={styles.container}>
-        <Text style={[styles.fireEmoji, { fontSize: size * 0.8 }]}>🔥</Text>
+        <StreakFlameIcon size={size * 0.8} />
       </View>
     );
   }
@@ -87,8 +87,10 @@ export default function StreakFire({ streak, size = 24 }: StreakFireProps) {
       {streak >= 7 && (
         <Animated.View style={[styles.glow, { width: size * 2, height: size * 2, borderRadius: size, opacity: glowOpacity }]} />
       )}
-      <Animated.View style={{ opacity: flickerOpacity, transform: [{ scale: Animated.multiply(flickerScale, fireScale) }, { rotate: wobbleDeg }] }}>
-        <Text style={[styles.fireEmoji, { fontSize: size }]}>{fireEmoji}</Text>
+      <Animated.View style={{ opacity: flickerOpacity, flexDirection: 'row', transform: [{ scale: Animated.multiply(flickerScale, fireScale) }, { rotate: wobbleDeg }] }}>
+        {Array.from({ length: fireCount }).map((_, i) => (
+          <StreakFlameIcon key={i} size={size} />
+        ))}
       </Animated.View>
     </View>
   );
@@ -96,6 +98,5 @@ export default function StreakFire({ streak, size = 24 }: StreakFireProps) {
 
 const styles = StyleSheet.create({
   container: { alignItems: 'center', justifyContent: 'center' },
-  fireEmoji: { textAlign: 'center' },
   glow: { position: 'absolute', backgroundColor: 'rgba(244,162,97,0.25)' },
 });

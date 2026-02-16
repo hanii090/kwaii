@@ -8,16 +8,22 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Colors, Spacing, BorderRadius, Shadows } from '../../constants/theme';
+import {
+  CrownIcon,
+  SadCatIcon,
+  SparkleIcon,
+  HeartIcon,
+} from '../icons/KawaiiIcons';
 
 interface PerkRowProps {
-  icon: string;
+  icon: React.ReactNode;
   text: string;
 }
 
 function PerkRow({ icon, text }: PerkRowProps) {
   return (
     <View style={styles.perkRow}>
-      <Text style={styles.perkIcon}>{icon}</Text>
+      <View style={styles.perkIconWrap}>{icon}</View>
       <Text style={styles.perkText}>{text}</Text>
     </View>
   );
@@ -51,15 +57,17 @@ export default function PaywallModal({
             <Text style={styles.closeText}>✕</Text>
           </TouchableOpacity>
 
-          <Text style={styles.crown}>👑</Text>
+          <View style={styles.crownWrap}>
+            <CrownIcon size={56} />
+          </View>
           <Text style={styles.title}>Kawaii Premium</Text>
           <Text style={styles.subtitle}>Unlock everything forever</Text>
 
           <View style={styles.perks}>
-            <PerkRow icon="🐱" text="All cats unlocked instantly" />
-            <PerkRow icon="🏷️" text="Unlimited name tags" />
-            <PerkRow icon="✨" text="All future shop items free" />
-            <PerkRow icon="💝" text="Support the developer" />
+            <PerkRow icon={<SadCatIcon size={20} color="#B8D8BA" />} text="All cats unlocked instantly" />
+            <PerkRow icon={<SparkleIcon size={20} color="#B8D8BA" />} text="Unlimited name tags" />
+            <PerkRow icon={<SparkleIcon size={20} />} text="All future shop items free" />
+            <PerkRow icon={<HeartIcon size={20} />} text="Support the developer" />
           </View>
 
           <View style={styles.priceContainer}>
@@ -126,9 +134,13 @@ const styles = StyleSheet.create({
     color: Colors.lightText,
     fontWeight: '600',
   },
-  crown: {
-    fontSize: 56,
+  crownWrap: {
     marginBottom: Spacing.sm,
+    alignItems: 'center',
+  },
+  perkIconWrap: {
+    width: 24,
+    alignItems: 'center',
   },
   title: {
     fontSize: 26,

@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { X, Clock } from 'lucide-react-native';
+import { CalendarIcon, MedPillIcon } from '../src/components/icons/KawaiiIcons';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Colors, Spacing, BorderRadius, Shadows } from '../src/constants/theme';
 import { useMedicationStore } from '../src/stores/medicationStore';
@@ -115,6 +116,7 @@ export default function AddMedicationScreen() {
       scheduledTime,
       icon: selectedIcon,
       color: '#FFF3D6',
+      days: selectedDays.length > 0 ? selectedDays : ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'],
     });
 
     router.back();
@@ -130,7 +132,7 @@ export default function AddMedicationScreen() {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <View style={styles.pillIcon}>
-              <Text style={{ fontSize: 20 }}>💊</Text>
+              <MedPillIcon size={22} />
             </View>
             <Text style={styles.headerTitle}>Add Medication</Text>
           </View>
@@ -211,7 +213,16 @@ export default function AddMedicationScreen() {
               </TouchableOpacity>
             ))}
           </View>
-          <Text style={styles.hint}>Select which days you take this medication.</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }}>
+            <CalendarIcon size={16} />
+            <Text style={styles.hint}>
+              {selectedDays.length === 0
+                ? 'No days selected — will show every day'
+                : selectedDays.length === 7
+                ? 'Every day'
+                : selectedDays.join(', ')}
+            </Text>
+          </View>
 
           {/* Reminder Times */}
           <View style={styles.divider} />
