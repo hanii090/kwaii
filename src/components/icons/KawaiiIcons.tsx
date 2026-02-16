@@ -347,22 +347,34 @@ export function MoonIcon({ size = 20, color = '#F4A261' }: IconProps) {
   );
 }
 
-// Kawaii Cat Face — generic happy cat
+// Kawaii Cat Face — cute rounded cat
 export function CatFaceIcon({ size = 20, color = '#F4A261' }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Circle cx="12" cy="14" r="9" fill={color} stroke="#8B5E3C" strokeWidth={1} />
-      <Path d="M5 8L3 2L9 6Z" fill={color} stroke="#8B5E3C" strokeWidth={0.8} />
-      <Path d="M19 8L21 2L15 6Z" fill={color} stroke="#8B5E3C" strokeWidth={0.8} />
-      <Path d="M6 7L4.5 3.5L8.5 6Z" fill="#FFD4A8" />
-      <Path d="M18 7L19.5 3.5L15.5 6Z" fill="#FFD4A8" />
-      <Circle cx="9" cy="12.5" r="1.5" fill="#5C3D2E" />
-      <Circle cx="9.5" cy="12" r="0.5" fill="#FFFFFF" />
-      <Circle cx="15" cy="12.5" r="1.5" fill="#5C3D2E" />
-      <Circle cx="15.5" cy="12" r="0.5" fill="#FFFFFF" />
-      <Path d="M10.5 16Q12 17.5 13.5 16" stroke="#5C3D2E" strokeWidth={0.8} strokeLinecap="round" fill="none" />
-      <Ellipse cx="7" cy="15" rx="1.5" ry="0.8" fill="#FFB4A2" opacity={0.4} />
-      <Ellipse cx="17" cy="15" rx="1.5" ry="0.8" fill="#FFB4A2" opacity={0.4} />
+      {/* Head */}
+      <Ellipse cx="12" cy="14" rx="9" ry="8.5" fill={color} stroke="#C07A3E" strokeWidth={0.8} />
+      {/* Ears */}
+      <Path d="M4.5 9.5L3.5 3L8.5 7.5Z" fill={color} stroke="#C07A3E" strokeWidth={0.8} strokeLinejoin="round" />
+      <Path d="M19.5 9.5L20.5 3L15.5 7.5Z" fill={color} stroke="#C07A3E" strokeWidth={0.8} strokeLinejoin="round" />
+      {/* Inner ears */}
+      <Path d="M5.5 8.5L5 4.5L8 7Z" fill="#FFD4A8" />
+      <Path d="M18.5 8.5L19 4.5L16 7Z" fill="#FFD4A8" />
+      {/* Eyes */}
+      <Ellipse cx="8.8" cy="13" rx="1.4" ry="1.6" fill="#5C3D2E" />
+      <Ellipse cx="15.2" cy="13" rx="1.4" ry="1.6" fill="#5C3D2E" />
+      {/* Eye highlights */}
+      <Circle cx="9.4" cy="12.3" r="0.6" fill="#FFFFFF" />
+      <Circle cx="15.8" cy="12.3" r="0.6" fill="#FFFFFF" />
+      <Circle cx="8.4" cy="13.6" r="0.3" fill="#FFFFFF" opacity={0.6} />
+      <Circle cx="14.8" cy="13.6" r="0.3" fill="#FFFFFF" opacity={0.6} />
+      {/* Nose */}
+      <Ellipse cx="12" cy="15.5" rx="0.8" ry="0.5" fill="#C07A3E" />
+      {/* Mouth */}
+      <Path d="M10.5 16.8Q12 18 13.5 16.8" stroke="#C07A3E" strokeWidth={0.7} strokeLinecap="round" fill="none" />
+      <Line x1="12" y1="15.9" x2="12" y2="16.8" stroke="#C07A3E" strokeWidth={0.6} strokeLinecap="round" />
+      {/* Cheek blush */}
+      <Ellipse cx="6.8" cy="15.5" rx="1.8" ry="1" fill="#FFB4A2" opacity={0.35} />
+      <Ellipse cx="17.2" cy="15.5" rx="1.8" ry="1" fill="#FFB4A2" opacity={0.35} />
     </Svg>
   );
 }
@@ -475,6 +487,31 @@ export function CalendarIcon({ size = 20, color = '#F4A261' }: IconProps) {
       <Circle cx="16" cy="15" r="1" fill="#8B5E3C" />
       <Circle cx="8" cy="18.5" r="1" fill="#8B5E3C" opacity={0.4} />
       <Circle cx="12" cy="18.5" r="1" fill="#8B5E3C" opacity={0.4} />
+    </Svg>
+  );
+}
+
+// Kawaii Pencil / Edit
+export function PencilIcon({ size = 20, color = '#F4A261' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M16.5 3.5L20.5 7.5L8 20H4V16L16.5 3.5Z" fill="#FFF5E6" stroke="#8B5E3C" strokeWidth={1} strokeLinejoin="round" />
+      <Path d="M4 16L8 20H4V16Z" fill={color} stroke="#8B5E3C" strokeWidth={1} strokeLinejoin="round" />
+      <Path d="M16.5 3.5L20.5 7.5L18.5 9.5L14.5 5.5L16.5 3.5Z" fill={color} stroke="#8B5E3C" strokeWidth={1} strokeLinejoin="round" />
+      <Line x1="14.5" y1="5.5" x2="18.5" y2="9.5" stroke="#8B5E3C" strokeWidth={0.6} opacity={0.3} />
+    </Svg>
+  );
+}
+
+// Kawaii Name Tag
+export function NameTagIcon({ size = 20, color = '#F4A261' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="2" y="6" width="20" height="12" rx="3" fill="#FFF5E6" stroke="#8B5E3C" strokeWidth={1} />
+      <Rect x="2" y="6" width="20" height="5" rx="3" fill={color} />
+      <Path d="M2 9H22V11H2V9Z" fill={color} />
+      <Line x1="6" y1="14.5" x2="18" y2="14.5" stroke="#8B5E3C" strokeWidth={0.8} strokeLinecap="round" opacity={0.3} />
+      <Circle cx="5" cy="8.5" r="1" fill="#FFFFFF" opacity={0.5} />
     </Svg>
   );
 }

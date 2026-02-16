@@ -24,6 +24,8 @@ import {
   StarIcon,
   CatFaceIcon,
   SparkleIcon,
+  PencilIcon,
+  NameTagIcon,
   HappyCatMoodIcon,
   NeutralCatMoodIcon,
   SleepyCatMoodIcon,
@@ -232,7 +234,10 @@ function AnimatedCatCard({
             onPress={onRename}
             activeOpacity={0.7}
           >
-            <Text style={styles.renameButtonText}>✏️ Rename</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <PencilIcon size={13} />
+              <Text style={styles.renameButtonText}>Rename</Text>
+            </View>
           </TouchableOpacity>
         </Animated.View>
       </Pressable>
@@ -345,7 +350,9 @@ export default function CatsScreen() {
       <Modal visible={renameModal.visible} transparent animationType="none">
         <Animated.View style={[styles.modalOverlay, { opacity: modalOpacity }]}>
           <Animated.View style={[styles.modalCard, { transform: [{ scale: modalScale }] }]}>
-            <Text style={styles.modalEmoji}>✏️</Text>
+            <View style={styles.modalIconCircle}>
+              <PencilIcon size={28} />
+            </View>
             <Text style={styles.modalTitle}>Rename your cat</Text>
             <TextInput
               style={styles.modalInput}
@@ -356,8 +363,8 @@ export default function CatsScreen() {
               autoFocus
               maxLength={20}
             />
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 }}>
-              <SparkleIcon size={14} />
+            <View style={styles.modalCostRow}>
+              <NameTagIcon size={16} />
               <Text style={styles.modalCost}>Costs 1 name tag</Text>
             </View>
             <View style={styles.modalButtons}>
@@ -577,9 +584,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...Shadows.large,
   },
-  modalEmoji: {
-    fontSize: 36,
-    marginBottom: Spacing.sm,
+  modalIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFF5E6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.md,
   },
   modalTitle: {
     fontSize: 20,
@@ -600,11 +612,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: Spacing.sm,
   },
+  modalCostRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
   modalCost: {
     fontSize: 13,
     fontWeight: '500',
     color: Colors.lightText,
-    marginBottom: Spacing.lg,
   },
   modalButtons: {
     flexDirection: 'row',
