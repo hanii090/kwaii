@@ -18,6 +18,7 @@ import { useMedicationStore } from '../../src/stores/medicationStore';
 import { useNotificationStore } from '../../src/stores/notificationStore';
 import { NotificationService } from '../../src/services/notificationService';
 import { useAnimationTrigger } from '../../src/hooks/useAnimationTrigger';
+import { useStaggeredEntry } from '../../src/hooks/useStaggeredEntry';
 import MedicationCard from '../../src/components/MedicationCard';
 
 import CatIllustration from '../../src/components/CatIllustration';
@@ -77,6 +78,9 @@ export default function HomeScreen() {
     activeCat.breed !== 'basic' ? 'idle' : 'none'
   );
   const isPremiumCat = activeCat.breed !== 'basic';
+
+  // Staggered entry animations for sections
+  const sectionAnims = useStaggeredEntry({ count: 4, delay: 100, stagger: 100, duration: 500, translateY: 24 });
 
   // Animated cloud positions
   const cloud1X = useRef(new Animated.Value(0)).current;
@@ -303,7 +307,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header Row */}
-        <View style={styles.header}>
+        <Animated.View style={[styles.header, sectionAnims[0]]}>
           <View style={styles.streakBadge}>
             <StreakFire streak={streak} size={18} />
             <Text style={styles.streakCount}>{streak}</Text>
@@ -323,9 +327,10 @@ export default function HomeScreen() {
               <Text style={styles.coinsCount}>{coins}</Text>
             </View>
           </View>
-        </View>
+        </Animated.View>
 
         {/* Cat Display Card */}
+        <Animated.View style={sectionAnims[1]}>
         <Pressable onPress={handleCardTap} style={styles.catCard}>
           {/* Sky gradient background */}
           <View style={styles.skyGradient}>
@@ -446,9 +451,10 @@ export default function HomeScreen() {
             <Text style={styles.xpText}>{activeCat.currentXP} / {xpNeeded} XP</Text>
           </View>
         </Pressable>
+        </Animated.View>
 
         {/* Today's Medicine */}
-        <View style={styles.medsSection}>
+        <Animated.View style={[styles.medsSection, sectionAnims[2]]}>
           <Text style={styles.sectionTitle}>Today's Medicine</Text>
           <Text style={styles.dateSubtitle}>{dateStr}</Text>
 
@@ -535,7 +541,7 @@ export default function HomeScreen() {
               })}
             </>
           )}
-        </View>
+        </Animated.View>
 
         <View style={{ height: 120 }} />
       </ScrollView>

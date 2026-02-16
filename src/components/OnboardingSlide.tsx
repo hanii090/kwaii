@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Dimensions,
   useWindowDimensions,
+  Animated,
+  Easing,
 } from 'react-native';
 import { Colors, Spacing, BorderRadius } from '../constants/theme';
 import {
@@ -81,6 +83,101 @@ interface OnboardingSlideProps {
   totalSlides: number;
 }
 
+// Animated floating decoration with gentle drift
+function FloatingDecor({
+  icon,
+  top,
+  left,
+  size,
+  opacity,
+  index,
+}: {
+  icon: IconType;
+  top: number;
+  left: number;
+  size: number;
+  opacity: number;
+  index: number;
+}) {
+  const driftX = useRef(new Animated.Value(0)).current;
+  const driftY = useRef(new Animated.Value(0)).current;
+  const fadeIn = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Staggered fade-in
+    Animated.timing(fadeIn, {
+      toValue: 1,
+      duration: 600,
+      delay: 200 + index * 150,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+
+    // Gentle looping drift
+    const durationX = 3000 + index * 800;
+    const durationY = 3500 + index * 600;
+    const rangeX = 6 + index * 2;
+    const rangeY = 5 + index * 2;
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(driftX, { toValue: rangeX, duration: durationX, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(driftX, { toValue: -rangeX, duration: durationX, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    ).start();
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(driftY, { toValue: -rangeY, duration: durationY, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(driftY, { toValue: rangeY, duration: durationY, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
+  const IconComp = ICON_MAP[icon];
+
+  return (
+    <Animated.View
+      style={[
+        styles.floatingDecor,
+        {
+          top: `${top}%`,
+          left: `${left}%`,
+          opacity: Animated.multiply(fadeIn, new Animated.Value(opacity)),
+          transform: [{ translateX: driftX }, { translateY: driftY }],
+        },
+      ]}
+    >
+      <IconComp size={size} />
+    </Animated.View>
+  );
+}
+
+// Animated pagination dot
+function AnimatedDot({ isActive }: { isActive: boolean }) {
+  const widthAnim = useRef(new Animated.Value(isActive ? 28 : 8)).current;
+
+  useEffect(() => {
+    Animated.spring(widthAnim, {
+      toValue: isActive ? 28 : 8,
+      damping: 14,
+      stiffness: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [isActive]);
+
+  return (
+    <Animated.View
+      style={[
+        styles.dot,
+        {
+          width: widthAnim,
+          backgroundColor: isActive ? Colors.warm : Colors.inactive,
+        },
+      ]}
+    />
+  );
+}
+
 export default function OnboardingSlide({
   item,
   currentIndex,
@@ -91,6 +188,45 @@ export default function OnboardingSlide({
   const bgColor = SLIDE_BG_COLORS[currentIndex % SLIDE_BG_COLORS.length];
   const decorations = FLOATING_DECORATIONS[item.id] || [];
 
+  // Illustration spring scale-in
+  const illustrationScale = useRef(new Animated.Value(0.8)).current;
+  const illustrationOpacity = useRef(new Animated.Value(0)).current;
+
+  // Text stagger
+  const subtitleAnim = useRef(new Animated.Value(0)).current;
+  const titleAnim = useRef(new Animated.Value(0)).current;
+  const descAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Illustration entrance
+    Animated.parallel([
+      Animated.spring(illustrationScale, { toValue: 1, damping: 12, stiffness: 120, useNativeDriver: true }),
+      Animated.timing(illustrationOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+    ]).start();
+
+    // Text stagger: subtitle → title → description
+    const baseDelay = 300;
+    Animated.timing(subtitleAnim, {
+      toValue: 1, duration: 400, delay: baseDelay,
+      easing: Easing.out(Easing.back(1.1)), useNativeDriver: true,
+    }).start();
+    Animated.timing(titleAnim, {
+      toValue: 1, duration: 450, delay: baseDelay + 120,
+      easing: Easing.out(Easing.back(1.1)), useNativeDriver: true,
+    }).start();
+    Animated.timing(descAnim, {
+      toValue: 1, duration: 400, delay: baseDelay + 260,
+      easing: Easing.out(Easing.ease), useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const textStyle = (anim: Animated.Value) => ({
+    opacity: anim,
+    transform: [{
+      translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [18, 0] }),
+    }],
+  });
+
   return (
     <View style={[styles.container, { width }]}>
       {/* Colored illustration area */}
@@ -100,50 +236,38 @@ export default function OnboardingSlide({
           <View style={[styles.blobInner, { backgroundColor: Colors.background }]} />
         </View>
 
-        {/* Floating decorations */}
-        {decorations.map((dec, i) => {
-          const IconComp = ICON_MAP[dec.icon];
-          return (
-            <View
-              key={i}
-              style={[
-                styles.floatingDecor,
-                {
-                  top: `${dec.top}%`,
-                  left: `${dec.left}%`,
-                  opacity: dec.opacity,
-                },
-              ]}
-            >
-              <IconComp size={dec.size} />
-            </View>
-          );
-        })}
+        {/* Animated floating decorations */}
+        {decorations.map((dec, i) => (
+          <FloatingDecor key={i} index={i} {...dec} />
+        ))}
 
-        <View style={styles.illustrationContainer}>
+        <Animated.View style={[styles.illustrationContainer, {
+          transform: [{ scale: illustrationScale }],
+          opacity: illustrationOpacity,
+        }]}>
           <Illustration width={220} height={220} />
-        </View>
+        </Animated.View>
       </View>
 
       {/* Text content area */}
       <View style={styles.textArea}>
         {item.subtitle && (
-          <Text style={styles.subtitle}>{item.subtitle}</Text>
+          <Animated.Text style={[styles.subtitle, textStyle(subtitleAnim)]}>
+            {item.subtitle}
+          </Animated.Text>
         )}
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.description}>{item.description}</Text>
+        <Animated.Text style={[styles.title, textStyle(titleAnim)]}>
+          {item.title}
+        </Animated.Text>
+        <Animated.Text style={[styles.description, textStyle(descAnim)]}>
+          {item.description}
+        </Animated.Text>
       </View>
 
-      {/* Pagination dots */}
+      {/* Animated pagination dots */}
       <View style={styles.pagination}>
         {Array.from({ length: totalSlides }).map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.dot,
-              index === currentIndex ? styles.activeDot : styles.inactiveDot,
-            ]}
-          />
+          <AnimatedDot key={index} isActive={index === currentIndex} />
         ))}
       </View>
     </View>

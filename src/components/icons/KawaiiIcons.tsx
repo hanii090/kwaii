@@ -491,3 +491,171 @@ export function BeakerIcon({ size = 20, color = '#B8D8BA' }: IconProps) {
     </Svg>
   );
 }
+
+// ─── Medication Icon Set ───
+
+// Pill capsule
+export function PillMedIcon({ size = 20, color = '#F4A261' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="4" y="8" width="16" height="8" rx="4" fill={color} stroke="#8B5E3C" strokeWidth={1.2} />
+      <Rect x="12" y="8" width="8" height="8" rx="4" fill="#FFD4A8" stroke="#8B5E3C" strokeWidth={1.2} />
+      <Ellipse cx="8" cy="11" rx="1" ry="2" fill="#FFFFFF" opacity={0.4} />
+    </Svg>
+  );
+}
+
+// Syringe
+export function SyringeIcon({ size = 20, color = '#B8D8BA' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="8" y="3" width="8" height="3" rx="1" fill="#E8D5C0" stroke="#8B5E3C" strokeWidth={1} />
+      <Rect x="9" y="6" width="6" height="12" rx="1.5" fill={color} stroke="#8B5E3C" strokeWidth={1} />
+      <Rect x="9" y="12" width="6" height="6" rx="1.5" fill="#D4E7D6" />
+      <Line x1="11" y1="18" x2="11" y2="21" stroke="#8B5E3C" strokeWidth={1.2} strokeLinecap="round" />
+      <Line x1="13" y1="18" x2="13" y2="21" stroke="#8B5E3C" strokeWidth={1.2} strokeLinecap="round" />
+      <Line x1="9.5" y1="9" x2="14.5" y2="9" stroke="#8B5E3C" strokeWidth={0.6} opacity={0.4} />
+    </Svg>
+  );
+}
+
+// Bandage
+export function BandageIcon({ size = 20, color = '#FFD4A8' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="2" y="8" width="20" height="8" rx="4" fill={color} stroke="#8B5E3C" strokeWidth={1} />
+      <Rect x="8" y="8" width="8" height="8" fill="#F4A261" />
+      <Circle cx="10" cy="11" r="0.8" fill="#8B5E3C" opacity={0.5} />
+      <Circle cx="14" cy="11" r="0.8" fill="#8B5E3C" opacity={0.5} />
+      <Circle cx="10" cy="14" r="0.8" fill="#8B5E3C" opacity={0.5} />
+      <Circle cx="14" cy="14" r="0.8" fill="#8B5E3C" opacity={0.5} />
+      <Circle cx="12" cy="12.5" r="0.8" fill="#8B5E3C" opacity={0.5} />
+    </Svg>
+  );
+}
+
+// Sun (for morning meds)
+export function SunMedIcon({ size = 20, color = '#F4A261' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx="12" cy="12" r="5" fill={color} stroke="#8B5E3C" strokeWidth={1} />
+      <Circle cx="11" cy="11" r="1.5" fill="#FFFFFF" opacity={0.4} />
+      {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
+        const rad = (angle * Math.PI) / 180;
+        const x1 = 12 + Math.cos(rad) * 7;
+        const y1 = 12 + Math.sin(rad) * 7;
+        const x2 = 12 + Math.cos(rad) * 9;
+        const y2 = 12 + Math.sin(rad) * 9;
+        return <Line key={angle} x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={1.5} strokeLinecap="round" />;
+      })}
+    </Svg>
+  );
+}
+
+// Moon (for night meds)
+export function MoonMedIcon({ size = 20, color = '#E8D5C0' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M20 12.5C20 17.2 16.2 21 11.5 21C7.5 21 4.1 18.3 3.2 14.7C3.7 14.9 4.3 15 5 15C9.4 15 13 11.4 13 7C13 5.5 12.6 4.1 11.8 2.9C16.4 3.5 20 7.5 20 12.5Z" fill={color} stroke="#8B5E3C" strokeWidth={1} />
+      <Circle cx="8" cy="10" r="0.6" fill="#8B5E3C" />
+      <Circle cx="11" cy="13" r="0.4" fill="#8B5E3C" opacity={0.5} />
+    </Svg>
+  );
+}
+
+// Fish oil
+export function FishOilIcon({ size = 20, color = '#B8D8BA' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M4 12C4 12 7 7 13 7C16 7 18 9 19 10L21 9V15L19 14C18 15 16 17 13 17C7 17 4 12 4 12Z" fill={color} stroke="#8B5E3C" strokeWidth={1} />
+      <Circle cx="9" cy="12" r="1" fill="#5C3D2E" />
+      <Circle cx="9.3" cy="11.7" r="0.3" fill="#FFFFFF" />
+      <Path d="M13 10Q14.5 12 13 14" stroke="#8B5E3C" strokeWidth={0.6} fill="none" opacity={0.4} />
+    </Svg>
+  );
+}
+
+// Brain
+export function BrainMedIcon({ size = 20, color = '#FFB4A2' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 4C9 4 6 6 6 9C5 9 4 10.5 4 12C4 14 5.5 15.5 7 16C7 18 9 20 12 20C15 20 17 18 17 16C18.5 15.5 20 14 20 12C20 10.5 19 9 18 9C18 6 15 4 12 4Z" fill={color} stroke="#8B5E3C" strokeWidth={1} />
+      <Path d="M12 6V18" stroke="#8B5E3C" strokeWidth={0.8} opacity={0.4} />
+      <Path d="M9 8Q12 10 9 13" stroke="#8B5E3C" strokeWidth={0.6} fill="none" opacity={0.3} />
+      <Path d="M15 8Q12 10 15 13" stroke="#8B5E3C" strokeWidth={0.6} fill="none" opacity={0.3} />
+    </Svg>
+  );
+}
+
+// Heart (for heart meds)
+export function HeartMedIcon({ size = 20, color = '#FFB4A2' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 21C12 21 4 15 4 9.5C4 6.5 6.5 4 9 4C10.5 4 11.5 4.8 12 5.5C12.5 4.8 13.5 4 15 4C17.5 4 20 6.5 20 9.5C20 15 12 21 12 21Z" fill={color} stroke="#8B5E3C" strokeWidth={1} />
+      <Path d="M8 9Q9 7.5 10.5 9" stroke="#FFFFFF" strokeWidth={1} strokeLinecap="round" fill="none" opacity={0.5} />
+    </Svg>
+  );
+}
+
+// Herbal / leaf
+export function HerbalIcon({ size = 20, color = '#B8D8BA' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 22V12" stroke="#8B5E3C" strokeWidth={1.2} strokeLinecap="round" />
+      <Path d="M12 12C12 12 6 10 5 5C10 6 12 12 12 12Z" fill={color} stroke="#8B5E3C" strokeWidth={1} />
+      <Path d="M12 8C12 8 18 6 19 2C14 3 12 8 12 8Z" fill="#D4E7D6" stroke="#8B5E3C" strokeWidth={1} />
+      <Path d="M7 8L10 11" stroke="#8B5E3C" strokeWidth={0.5} opacity={0.3} />
+      <Path d="M15 4L13 7" stroke="#8B5E3C" strokeWidth={0.5} opacity={0.3} />
+    </Svg>
+  );
+}
+
+// Water drops
+export function DropsIcon({ size = 20, color = '#B8D8BA' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 3C12 3 6 10 6 15C6 18.3 8.7 21 12 21C15.3 21 18 18.3 18 15C18 10 12 3 12 3Z" fill={color} stroke="#8B5E3C" strokeWidth={1} />
+      <Path d="M10 14Q11 11 12.5 14" stroke="#FFFFFF" strokeWidth={1} strokeLinecap="round" fill="none" opacity={0.5} />
+      <Circle cx="10" cy="16" r="0.5" fill="#FFFFFF" opacity={0.4} />
+    </Svg>
+  );
+}
+
+// ─── Medication Icon Registry ───
+
+export const MEDICATION_ICON_MAP: Record<string, React.ComponentType<IconProps>> = {
+  pill: PillMedIcon,
+  syringe: SyringeIcon,
+  bandage: BandageIcon,
+  sun_med: SunMedIcon,
+  moon_med: MoonMedIcon,
+  fish_oil: FishOilIcon,
+  brain: BrainMedIcon,
+  heart_med: HeartMedIcon,
+  herbal: HerbalIcon,
+  drops: DropsIcon,
+};
+
+// Legacy emoji → icon ID mapping for backward compatibility
+const EMOJI_TO_ICON_ID: Record<string, string> = {
+  '💊': 'pill',
+  '💉': 'syringe',
+  '🩹': 'bandage',
+  '☀️': 'sun_med',
+  '🌙': 'moon_med',
+  '🐟': 'fish_oil',
+  '🧠': 'brain',
+  '❤️': 'heart_med',
+  '🌿': 'herbal',
+  '💧': 'drops',
+};
+
+export function getMedicationIcon(iconIdOrEmoji: string): React.ComponentType<IconProps> {
+  // Direct ID lookup
+  if (MEDICATION_ICON_MAP[iconIdOrEmoji]) return MEDICATION_ICON_MAP[iconIdOrEmoji];
+  // Legacy emoji lookup
+  const mapped = EMOJI_TO_ICON_ID[iconIdOrEmoji];
+  if (mapped && MEDICATION_ICON_MAP[mapped]) return MEDICATION_ICON_MAP[mapped];
+  // Fallback
+  return PillMedIcon;
+}

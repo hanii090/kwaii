@@ -75,7 +75,7 @@ export const useAnimationStore = create<AnimationStore>((set, get) => ({
         level: data.level,
         leveledUp: data.leveledUp,
       },
-      toastMessage: `✨ +10 XP, +${data.coinAmount} Coins!`,
+      toastMessage: `+10 XP, +${data.coinAmount} Coins!`,
       levelUpData: data.leveledUp
         ? {
             oldLevel: data.level - 1,

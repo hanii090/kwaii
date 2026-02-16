@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Alert,
   FlatList,
+  Animated,
+  Easing,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -30,6 +32,60 @@ const RARITY_COLORS: Record<string, { bg: string; text: string; border: string }
 };
 
 const sortedCats = [...SHOP_CATS].sort((a, b) => a.price - b.price);
+
+function AnimatedShopCard({
+  index,
+  onPress,
+  isOwned,
+  children,
+}: {
+  index: number;
+  onPress: () => void;
+  isOwned: boolean;
+  children: React.ReactNode;
+}) {
+  const entryAnim = useRef(new Animated.Value(0)).current;
+  const pressScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.timing(entryAnim, {
+      toValue: 1,
+      duration: 450,
+      delay: index * 80,
+      easing: Easing.out(Easing.back(1.1)),
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const handlePressIn = () => {
+    Animated.spring(pressScale, { toValue: 0.95, damping: 15, stiffness: 400, useNativeDriver: true }).start();
+  };
+  const handlePressOut = () => {
+    Animated.spring(pressScale, { toValue: 1, damping: 8, stiffness: 200, useNativeDriver: true }).start();
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={isOwned ? 1 : 0.9}
+      style={{ flex: 1 }}
+    >
+      <Animated.View
+        style={{
+          opacity: entryAnim,
+          transform: [
+            { translateY: entryAnim.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) },
+            { scale: pressScale },
+          ],
+        }}
+      >
+        {children}
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
 
 export default function ShopScreen() {
   const { coins, cats, purchaseCat } = useCatStore();
@@ -87,7 +143,7 @@ export default function ShopScreen() {
             onPress: async () => {
               const success = await presentPaywall();
               if (success) {
-                Alert.alert('Welcome to Premium! 👑', 'All cats are now free to claim!');
+                Alert.alert('Welcome to Premium!', 'All cats are now free to claim!');
               }
             },
           },
@@ -114,20 +170,19 @@ export default function ShopScreen() {
   };
 
 
-  const renderCatCard = ({ item }: { item: ShopCatItem }) => {
+  const renderCatCard = ({ item, index }: { item: ShopCatItem; index: number }) => {
     const isOwned = ownedCatIds.includes(item.id);
     const canAfford = isPremium || coins >= item.price;
     const rarity = RARITY_COLORS[item.category] ?? RARITY_COLORS.common;
 
     return (
-      <TouchableOpacity
+      <AnimatedShopCard index={index} onPress={() => handlePurchase(item)} isOwned={isOwned}>
+      <View
         style={[
           styles.catCard,
           { borderColor: isOwned ? Colors.accent : rarity.border },
           isOwned && styles.catCardOwned,
         ]}
-        onPress={() => handlePurchase(item)}
-        activeOpacity={isOwned ? 1 : 0.7}
       >
         {/* Rarity badge */}
         <View style={[styles.rarityBadge, { backgroundColor: rarity.bg }]}>
@@ -196,7 +251,8 @@ export default function ShopScreen() {
             </View>
           )}
         </View>
-      </TouchableOpacity>
+      </View>
+      </AnimatedShopCard>
     );
   };
 

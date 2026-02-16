@@ -9,6 +9,7 @@ import {
   TextInput,
   Alert,
   Linking,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -40,6 +41,7 @@ import {
   ClipboardIcon,
   SunIcon,
 } from '../../src/components/icons/KawaiiIcons';
+import { useStaggeredEntry } from '../../src/hooks/useStaggeredEntry';
 
 export default function SettingsScreen() {
   const {
@@ -53,6 +55,7 @@ export default function SettingsScreen() {
     clearAllData,
   } = useCatStore();
   const activeCat = cats.find((c) => c.id === activeCatId) ?? cats[0];
+  const sectionAnims = useStaggeredEntry({ count: 5, delay: 50, stagger: 80, duration: 400, translateY: 16 });
   const { medications } = useMedicationStore();
   const {
     isPremium,
@@ -148,7 +151,7 @@ export default function SettingsScreen() {
         onPurchase={() => {
           setPremium(true);
           setShowFallbackPaywall(false);
-          Alert.alert('Welcome to Premium! \u{1F451}', 'All cats are now free to claim!');
+          Alert.alert('Welcome to Premium!', 'All cats are now free to claim!');
         }}
         onRestore={async () => {
           const success = await restore();
@@ -165,9 +168,12 @@ export default function SettingsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.screenTitle}>Settings</Text>
+        <Animated.View style={sectionAnims[0]}>
+          <Text style={styles.screenTitle}>Settings</Text>
+        </Animated.View>
 
         {/* Premium Section */}
+        <Animated.View style={sectionAnims[1]}>
         <Text style={styles.sectionLabel}>PREMIUM</Text>
         {isPremium ? (
           <View style={styles.card}>
@@ -200,8 +206,10 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </View>
         )}
+        </Animated.View>
 
         {/* Profile Section */}
+        <Animated.View style={sectionAnims[2]}>
         <Text style={styles.sectionLabel}>PROFILE</Text>
         <View style={styles.card}>
           <View style={styles.row}>
@@ -241,8 +249,10 @@ export default function SettingsScreen() {
             <Text style={styles.rowValue}>{streak} days</Text>
           </View>
         </View>
+        </Animated.View>
 
         {/* Notifications Section */}
+        <Animated.View style={sectionAnims[3]}>
         <Text style={styles.sectionLabel}>NOTIFICATIONS</Text>
         {permissionStatus === 'denied' && (
           <TouchableOpacity
@@ -381,8 +391,10 @@ export default function SettingsScreen() {
             )}
           </View>
         </View>
+        </Animated.View>
 
         {/* App Section */}
+        <Animated.View style={sectionAnims[4]}>
         <Text style={styles.sectionLabel}>APP</Text>
         <View style={styles.card}>
           <View style={styles.row}>
@@ -401,7 +413,9 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.footer}>Made with 💛 by Kawaii Meds</Text>
+        </Animated.View>
+
+        <Text style={styles.footer}>Made with love by Kawaii Meds</Text>
         <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>

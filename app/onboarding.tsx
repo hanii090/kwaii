@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import {
   View,
   FlatList,
@@ -9,6 +9,7 @@ import {
   ViewToken,
   Alert,
   Linking,
+  Easing,
 } from 'react-native';
 import { router } from 'expo-router';
 import OnboardingSlide, { SlideData } from '../src/components/OnboardingSlide';
@@ -61,6 +62,23 @@ export default function OnboardingScreen() {
   const [showNameInput, setShowNameInput] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
+  const bottomSlide = useRef(new Animated.Value(40)).current;
+  const bottomOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(bottomSlide, { toValue: 0, duration: 600, delay: 400, easing: Easing.out(Easing.back(1.05)), useNativeDriver: true }),
+      Animated.timing(bottomOpacity, { toValue: 1, duration: 500, delay: 400, useNativeDriver: true }),
+    ]).start();
+  }, []);
+
+  const handleButtonPressIn = () => {
+    Animated.spring(buttonScale, { toValue: 0.94, damping: 15, stiffness: 400, useNativeDriver: true }).start();
+  };
+  const handleButtonPressOut = () => {
+    Animated.spring(buttonScale, { toValue: 1, damping: 8, stiffness: 200, useNativeDriver: true }).start();
+  };
 
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
@@ -222,7 +240,7 @@ export default function OnboardingScreen() {
         )}
       />
 
-      <View style={styles.bottomContainer}>
+      <Animated.View style={[styles.bottomContainer, { transform: [{ translateY: bottomSlide }], opacity: bottomOpacity }]}>
         {currentIndex === 3 && (
           <TouchableOpacity
             style={styles.skipNotifButton}
@@ -233,16 +251,22 @@ export default function OnboardingScreen() {
           </TouchableOpacity>
         )}
         <TouchableOpacity
-          style={[
-            styles.nextButton,
-            currentIndex === 3 && styles.notifButton,
-          ]}
           onPress={handleNext}
-          activeOpacity={0.8}
+          onPressIn={handleButtonPressIn}
+          onPressOut={handleButtonPressOut}
+          activeOpacity={1}
         >
-          <Text style={styles.nextButtonText}>{getButtonText()}</Text>
+          <Animated.View
+            style={[
+              styles.nextButton,
+              currentIndex === 3 && styles.notifButton,
+              { transform: [{ scale: buttonScale }] },
+            ]}
+          >
+            <Text style={styles.nextButtonText}>{getButtonText()}</Text>
+          </Animated.View>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     </Animated.View>
   );
 }

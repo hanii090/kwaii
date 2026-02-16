@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,13 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { X, Clock } from 'lucide-react-native';
 import { CalendarIcon, MedPillIcon } from '../src/components/icons/KawaiiIcons';
+import IconPicker from '../src/components/IconPicker';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Colors, Spacing, BorderRadius, Shadows } from '../src/constants/theme';
 import { useMedicationStore } from '../src/stores/medicationStore';
@@ -27,14 +29,37 @@ const DAYS = [
   { key: 'Su', label: 'Su' },
 ];
 
-const ICONS = ['💊', '💉', '🩹', '☀️', '🌙', '🐟', '🧠', '❤️', '🌿', '💧'];
+
+function AnimatedSubmitButton({ canSubmit, onPress }: { canSubmit: boolean; onPress: () => void }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const handlePressIn = () => {
+    Animated.spring(scale, { toValue: 0.94, damping: 15, stiffness: 400, useNativeDriver: true }).start();
+  };
+  const handlePressOut = () => {
+    Animated.spring(scale, { toValue: 1, damping: 8, stiffness: 200, useNativeDriver: true }).start();
+  };
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={1}
+      disabled={!canSubmit}
+    >
+      <Animated.View style={[styles.addButton, !canSubmit && styles.addButtonDisabled, { transform: [{ scale }] }]}>
+        <Text style={styles.addButtonText}>Add Medication</Text>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
 
 export default function AddMedicationScreen() {
   const { addMedication } = useMedicationStore();
 
   const [name, setName] = useState('');
   const [dosage, setDosage] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState('💊');
+  const [selectedIcon, setSelectedIcon] = useState('pill');
+  const [selectedColor, setSelectedColor] = useState('#FFF3D6');
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [reminderTimes, setReminderTimes] = useState<Date[]>([
     (() => { const d = new Date(); d.setHours(9, 30, 0, 0); return d; })(),
@@ -115,7 +140,7 @@ export default function AddMedicationScreen() {
       times,
       scheduledTime,
       icon: selectedIcon,
-      color: '#FFF3D6',
+      color: selectedColor,
       days: selectedDays.length > 0 ? selectedDays : ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'],
     });
 
@@ -171,22 +196,12 @@ export default function AddMedicationScreen() {
           />
 
           {/* Icon Selector */}
-          <Text style={styles.fieldLabel}>Icon</Text>
-          <View style={styles.iconRow}>
-            {ICONS.map((icon) => (
-              <TouchableOpacity
-                key={icon}
-                style={[
-                  styles.iconOption,
-                  selectedIcon === icon && styles.iconOptionSelected,
-                ]}
-                onPress={() => setSelectedIcon(icon)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.iconText}>{icon}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <IconPicker
+            selectedIcon={selectedIcon}
+            selectedColor={selectedColor}
+            onSelectIcon={setSelectedIcon}
+            onSelectColor={setSelectedColor}
+          />
 
           {/* Days */}
           <View style={styles.divider} />
@@ -279,14 +294,7 @@ export default function AddMedicationScreen() {
 
         {/* Bottom Button */}
         <View style={styles.bottomBar}>
-          <TouchableOpacity
-            style={[styles.addButton, !canSubmit && styles.addButtonDisabled]}
-            onPress={handleSubmit}
-            activeOpacity={0.85}
-            disabled={!canSubmit}
-          >
-            <Text style={styles.addButtonText}>Add Medication</Text>
-          </TouchableOpacity>
+          <AnimatedSubmitButton canSubmit={canSubmit} onPress={handleSubmit} />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

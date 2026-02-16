@@ -11,7 +11,7 @@ import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react-native';
 import { format, addMonths, subMonths } from 'date-fns';
 import { Colors, Spacing, BorderRadius, Shadows } from '../src/constants/theme';
-import { CheckIcon } from '../src/components/icons/KawaiiIcons';
+import { CheckIcon, getMedicationIcon } from '../src/components/icons/KawaiiIcons';
 import { useMedicationStore } from '../src/stores/medicationStore';
 import CalendarGrid, { type DayStatus } from '../src/components/CalendarGrid';
 
@@ -129,7 +129,7 @@ export default function CalendarScreen() {
                   if (selectedDayKey === today) {
                     return medications.map((med) => (
                       <View key={med.id} style={styles.detailMedRow}>
-                        <Text style={styles.detailMedIcon}>{med.icon || '💊'}</Text>
+                        <View style={styles.detailMedIcon}>{(() => { const I = getMedicationIcon(med.icon || 'pill'); return <I size={20} />; })()}</View>
                         <Text style={styles.detailMedName}>{med.name}</Text>
                         <View style={styles.detailMedStatus}>
                           {med.taken ? <CheckIcon size={18} color="#4CAF50" /> : <View style={styles.uncheckedBox} />}
@@ -141,7 +141,7 @@ export default function CalendarScreen() {
                   if (historyEntry) {
                     return historyEntry.medications.map((med) => (
                       <View key={med.id} style={styles.detailMedRow}>
-                        <Text style={styles.detailMedIcon}>{med.icon || '💊'}</Text>
+                        <View style={styles.detailMedIcon}>{(() => { const I = getMedicationIcon(med.icon || 'pill'); return <I size={20} />; })()}</View>
                         <Text style={styles.detailMedName}>{med.name}</Text>
                         <View style={styles.detailMedStatus}>
                           {med.taken ? <CheckIcon size={18} color="#4CAF50" /> : <View style={styles.uncheckedBox} />}
@@ -279,7 +279,8 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   detailMedIcon: {
-    fontSize: 18,
+    width: 24,
+    alignItems: 'center' as const,
   },
   detailMedName: {
     flex: 1,

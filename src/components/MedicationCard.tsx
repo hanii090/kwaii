@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,12 @@ import {
   TouchableOpacity,
   Animated,
   Alert,
+  Easing,
 } from 'react-native';
 import { Check, Clock, Trash2 } from 'lucide-react-native';
 import { Medication } from '../stores/medicationStore';
 import { Colors, Spacing, BorderRadius, Shadows } from '../constants/theme';
+import { getMedicationIcon } from './icons/KawaiiIcons';
 
 interface MedicationCardProps {
   medication: Medication;
@@ -23,21 +25,30 @@ export default function MedicationCard({
   onDeleteMedication,
 }: MedicationCardProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const checkScale = useRef(new Animated.Value(0)).current;
+  const checkOpacity = useRef(new Animated.Value(0)).current;
+  const cardBg = useRef(new Animated.Value(medication.taken ? 1 : 0)).current;
+
+  useEffect(() => {
+    if (medication.taken) {
+      Animated.parallel([
+        Animated.spring(checkScale, { toValue: 1, damping: 8, stiffness: 200, useNativeDriver: true }),
+        Animated.timing(checkOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+        Animated.timing(cardBg, { toValue: 1, duration: 300, easing: Easing.out(Easing.ease), useNativeDriver: false }),
+      ]).start();
+    } else {
+      checkScale.setValue(0);
+      checkOpacity.setValue(0);
+      cardBg.setValue(0);
+    }
+  }, [medication.taken]);
 
   const handlePress = () => {
     if (medication.taken) return;
 
     Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 0.95,
-        duration: 80,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        friction: 4,
-        useNativeDriver: true,
-      }),
+      Animated.spring(scaleAnim, { toValue: 0.93, damping: 15, stiffness: 400, useNativeDriver: true }),
+      Animated.spring(scaleAnim, { toValue: 1, damping: 8, stiffness: 200, useNativeDriver: true }),
     ]).start();
 
     onTakeMedication(medication.id);
@@ -79,7 +90,7 @@ export default function MedicationCard({
             { backgroundColor: medication.taken ? Colors.takenGreen : medication.color || Colors.card },
           ]}
         >
-          <Text style={styles.icon}>{medication.icon || '💊'}</Text>
+          {(() => { const MedIcon = getMedicationIcon(medication.icon || 'pill'); return <MedIcon size={26} />; })()}
         </View>
 
         <View style={styles.info}>
@@ -107,7 +118,9 @@ export default function MedicationCard({
         disabled={medication.taken}
       >
         {medication.taken && (
-          <Check size={20} color={Colors.white} strokeWidth={3} />
+          <Animated.View style={{ transform: [{ scale: checkScale }], opacity: checkOpacity }}>
+            <Check size={20} color={Colors.white} strokeWidth={3} />
+          </Animated.View>
         )}
       </TouchableOpacity>
     </Animated.View>
