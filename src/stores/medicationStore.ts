@@ -66,7 +66,7 @@ export const useMedicationStore = create<MedicationStore>()(
           medication.times
         );
       } catch (e) {
-        console.warn('[MedicationStore] Failed to schedule notifications:', e);
+        if (__DEV__) console.warn('[MedicationStore] Failed to schedule notifications:', e);
       }
     }
 
@@ -100,7 +100,7 @@ export const useMedicationStore = create<MedicationStore>()(
         }
         await NotificationService.cancelMedicationNotifications(id);
       } catch (e) {
-        console.warn('[MedicationStore] Failed to cancel notifications:', e);
+        if (__DEV__) console.warn('[MedicationStore] Failed to cancel notifications:', e);
       }
     }
 

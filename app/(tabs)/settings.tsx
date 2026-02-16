@@ -22,6 +22,7 @@ import {
   Trash2,
 } from 'lucide-react-native';
 import { useFocusEffect } from 'expo-router';
+import Constants from 'expo-constants';
 import { Colors, Spacing, BorderRadius, Shadows } from '../../src/constants/theme';
 import { useCatStore } from '../../src/stores/catStore';
 import { useMedicationStore } from '../../src/stores/medicationStore';
@@ -400,8 +401,26 @@ export default function SettingsScreen() {
           <View style={styles.row}>
             <Info size={18} color={Colors.primary} />
             <Text style={styles.rowLabel}>Version</Text>
-            <Text style={styles.rowValue}>1.0.0</Text>
+            <Text style={styles.rowValue}>{Constants.expoConfig?.version ?? '1.0.0'}</Text>
           </View>
+          <View style={styles.divider} />
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => Linking.openURL('https://kawaiimeds.app/privacy')}
+          >
+            <Info size={18} color={Colors.primary} />
+            <Text style={styles.rowLabel}>Privacy Policy</Text>
+            <ChevronRight size={16} color={Colors.lightText} />
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => Linking.openURL('https://kawaiimeds.app/terms')}
+          >
+            <Info size={18} color={Colors.primary} />
+            <Text style={styles.rowLabel}>Terms of Service</Text>
+            <ChevronRight size={16} color={Colors.lightText} />
+          </TouchableOpacity>
         </View>
 
         {/* Data Section */}

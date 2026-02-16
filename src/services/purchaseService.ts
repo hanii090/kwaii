@@ -24,7 +24,7 @@ class PurchaseServiceClass {
     if (this.initialized) return;
 
     if (!REVENUECAT_API_KEY) {
-      console.warn('RevenueCat API key not set, skipping initialization');
+      if (__DEV__) console.warn('RevenueCat API key not set, skipping initialization');
       return;
     }
 
@@ -35,9 +35,9 @@ class PurchaseServiceClass {
 
       Purchases.configure({ apiKey: REVENUECAT_API_KEY });
       this.initialized = true;
-      console.log('RevenueCat initialized successfully');
+      if (__DEV__) console.log('RevenueCat initialized successfully');
     } catch (error) {
-      console.warn('RevenueCat init failed:', error);
+      if (__DEV__) console.warn('RevenueCat init failed:', error);
     }
   }
 
@@ -131,7 +131,7 @@ class PurchaseServiceClass {
           return false;
       }
     } catch (error) {
-      console.warn('Error presenting paywall:', error);
+      if (__DEV__) console.warn('Error presenting paywall:', error);
       return false;
     }
   }
@@ -144,24 +144,24 @@ class PurchaseServiceClass {
       await RevenueCatUI.presentCustomerCenter({
         callbacks: {
           onRestoreStarted: () => {
-            console.log('Customer Center: restore started');
+            if (__DEV__) console.log('Customer Center: restore started');
           },
           onRestoreCompleted: ({ customerInfo }) => {
-            console.log('Customer Center: restore completed', this.hasPremium(customerInfo));
+            if (__DEV__) console.log('Customer Center: restore completed', this.hasPremium(customerInfo));
           },
           onRestoreFailed: ({ error }) => {
-            console.warn('Customer Center: restore failed', error);
+            if (__DEV__) console.warn('Customer Center: restore failed', error);
           },
           onShowingManageSubscriptions: () => {
-            console.log('Customer Center: showing manage subscriptions');
+            if (__DEV__) console.log('Customer Center: showing manage subscriptions');
           },
           onFeedbackSurveyCompleted: ({ feedbackSurveyOptionId }) => {
-            console.log('Customer Center: feedback survey completed', feedbackSurveyOptionId);
+            if (__DEV__) console.log('Customer Center: feedback survey completed', feedbackSurveyOptionId);
           },
         },
       });
     } catch (error) {
-      console.warn('Error presenting Customer Center:', error);
+      if (__DEV__) console.warn('Error presenting Customer Center:', error);
     }
   }
 

@@ -15,7 +15,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 
     return BackgroundFetch.BackgroundFetchResult.NewData;
   } catch (error) {
-    console.error('[BackgroundTask] Error:', error);
+    if (__DEV__) console.error('[BackgroundTask] Error:', error);
     return BackgroundFetch.BackgroundFetchResult.Failed;
   }
 });
@@ -35,7 +35,7 @@ export async function registerBackgroundFetch(): Promise<void> {
       startOnBoot: true,
     });
   } catch (error) {
-    console.warn('[BackgroundTask] Registration failed:', error);
+    if (__DEV__) console.warn('[BackgroundTask] Registration failed:', error);
   }
 }
 
@@ -49,6 +49,6 @@ export async function unregisterBackgroundFetch(): Promise<void> {
       await BackgroundFetch.unregisterTaskAsync(BACKGROUND_FETCH_TASK);
     }
   } catch (error) {
-    console.warn('[BackgroundTask] Unregistration failed:', error);
+    if (__DEV__) console.warn('[BackgroundTask] Unregistration failed:', error);
   }
 }

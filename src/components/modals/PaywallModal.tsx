@@ -6,6 +6,7 @@ import {
   Modal,
   TouchableOpacity,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { Colors, Spacing, BorderRadius, Shadows } from '../../constants/theme';
 import {
@@ -96,6 +97,16 @@ export default function PaywallModal({
           >
             <Text style={styles.restoreText}>Restore Purchases</Text>
           </TouchableOpacity>
+
+          <View style={styles.legalRow}>
+            <TouchableOpacity onPress={() => Linking.openURL('https://kawaiimeds.app/privacy')}>
+              <Text style={styles.legalText}>Privacy Policy</Text>
+            </TouchableOpacity>
+            <Text style={styles.legalDot}>·</Text>
+            <TouchableOpacity onPress={() => Linking.openURL('https://kawaiimeds.app/terms')}>
+              <Text style={styles.legalText}>Terms of Service</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -220,6 +231,22 @@ const styles = StyleSheet.create({
   restoreText: {
     fontSize: 14,
     fontWeight: '500',
+    color: Colors.lightText,
+  },
+  legalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  legalText: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: Colors.lightText,
+    textDecorationLine: 'underline',
+  },
+  legalDot: {
+    fontSize: 12,
     color: Colors.lightText,
   },
 });
