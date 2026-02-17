@@ -99,11 +99,11 @@ export default function PaywallModal({
           </TouchableOpacity>
 
           <View style={styles.legalRow}>
-            <TouchableOpacity onPress={() => Linking.openURL('https://rehanaslam.me/kwaii/privacy')}>
+            <TouchableOpacity onPress={() => Linking.openURL('https://hanii090.github.io/kwaii/privacy/')}>
               <Text style={styles.legalText}>Privacy Policy</Text>
             </TouchableOpacity>
             <Text style={styles.legalDot}>·</Text>
-            <TouchableOpacity onPress={() => Linking.openURL('https://rehanaslam.me/kwaii/terms')}>
+            <TouchableOpacity onPress={() => Linking.openURL('https://hanii090.github.io/kwaii/terms/')}>
               <Text style={styles.legalText}>Terms of Service</Text>
             </TouchableOpacity>
           </View>
