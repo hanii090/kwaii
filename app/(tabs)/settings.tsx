@@ -406,7 +406,7 @@ export default function SettingsScreen() {
           <View style={styles.divider} />
           <TouchableOpacity
             style={styles.row}
-            onPress={() => Linking.openURL('https://hanii090.github.io/kwaii/privacy')}
+            onPress={() => Linking.openURL('https://rehanaslam.me/kwaii/privacy')}
           >
             <Info size={18} color={Colors.primary} />
             <Text style={styles.rowLabel}>Privacy Policy</Text>
@@ -415,7 +415,7 @@ export default function SettingsScreen() {
           <View style={styles.divider} />
           <TouchableOpacity
             style={styles.row}
-            onPress={() => Linking.openURL('https://hanii090.github.io/kwaii/terms')}
+            onPress={() => Linking.openURL('https://rehanaslam.me/kwaii/terms')}
           >
             <Info size={18} color={Colors.primary} />
             <Text style={styles.rowLabel}>Terms of Service</Text>
