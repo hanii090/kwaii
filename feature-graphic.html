@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kawaii Meds Feature Graphic</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .container {
+            width: 1024px;
+            height: 500px;
+            background-color: #FFF9F0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Decorative Blobs */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.6;
+        }
+        .blob-1 {
+            width: 400px;
+            height: 400px;
+            background-color: #FFF5E6;
+            top: -100px;
+            left: -100px;
+        }
+        .blob-2 {
+            width: 300px;
+            height: 300px;
+            background-color: #D4E7D6;
+            bottom: -50px;
+            right: -50px;
+        }
+        .blob-3 {
+            width: 200px;
+            height: 200px;
+            background-color: #F4A261;
+            top: 50px;
+            right: 100px;
+            opacity: 0.2;
+        }
+
+        /* Content */
+        .logo-container {
+            z-index: 10;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title {
+            font-size: 96px;
+            font-weight: 800;
+            color: #8B5E3C;
+            letter-spacing: -2px;
+            line-height: 1;
+            text-shadow: 4px 4px 0px #E8D5C0;
+            margin: 0;
+            font-family: 'Fredoka One', cursive, sans-serif; /* Fallback will be sans-serif */
+        }
+        
+        .subtitle {
+            font-size: 32px;
+            font-weight: 600;
+            color: #A67C52;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        /* SVG Icons */
+        .icon {
+            position: absolute;
+            z-index: 5;
+            opacity: 0.8;
+        }
+        
+        /* Floating Animation */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        
+        .float-1 { animation: float 6s ease-in-out infinite; }
+        .float-2 { animation: float 7s ease-in-out infinite; animation-delay: 1s; }
+        .float-3 { animation: float 5s ease-in-out infinite; animation-delay: 2s; }
+        
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <!-- Background Blobs -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+
+        <!-- Decorative SVGs -->
+        
+        <!-- Paw Print Top Left -->
+        <svg class="icon float-1" style="top: 80px; left: 150px; transform: rotate(-15deg);" width="60" height="60" viewBox="0 0 24 24" fill="#A67C52">
+            <path d="M12 2C10.3431 2 9 3.34315 9 5C9 6.65685 10.3431 8 12 8C13.6569 8 15 6.65685 15 5C15 3.34315 13.6569 2 12 2ZM6.5 6C5.11929 6 4 7.11929 4 8.5C4 9.88071 5.11929 11 6.5 11C7.88071 11 9 9.88071 9 8.5C9 7.11929 7.88071 6 6.5 6ZM17.5 6C16.1193 6 15 7.11929 15 8.5C15 9.88071 16.1193 11 17.5 11C18.8807 11 20 9.88071 20 8.5C20 7.11929 18.8807 6 17.5 6ZM5.5 13.5C5.5 16.5376 7.96243 19 11 19C11.691 19 12.3653 18.8867 13 18.6796V18.5C13 16.567 14.567 15 16.5 15C17.2023 15 17.8553 15.208 18.4142 15.5677C18.1568 13.284 16.2163 11.5 13.8462 11.5H10.1538C7.5836 11.5 5.5 13.5836 5.5 16.1538V13.5Z" opacity="0.6"/>
+            <!-- Simplified paw main pad -->
+            <path d="M12 22c-2.8 0-5-2.2-5-5 0-2.8 2.2-5 5-5s5 2.2 5 5c0 2.8-2.2 5-5 5z" fill="#A67C52"/>
+            <circle cx="6" cy="10" r="2.5" fill="#A67C52"/>
+            <circle cx="12" cy="7" r="2.5" fill="#A67C52"/>
+            <circle cx="18" cy="10" r="2.5" fill="#A67C52"/>
+        </svg>
+
+        <!-- Pill Right -->
+        <svg class="icon float-2" style="bottom: 120px; right: 150px; transform: rotate(30deg);" width="80" height="80" viewBox="0 0 24 24" fill="none">
+            <rect x="4" y="8" width="16" height="8" rx="4" fill="#B8D8BA"/>
+            <path d="M12 8V16" stroke="#FFF9F0" stroke-width="2"/>
+        </svg>
+
+        <!-- Heart Top Right -->
+        <svg class="icon float-3" style="top: 100px; right: 200px;" width="50" height="50" viewBox="0 0 24 24" fill="#F4A261">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+
+        <!-- Main Title -->
+        <div class="logo-container">
+            <h1 class="title" style="font-family: 'Fredoka', sans-serif;">Kawaii Meds</h1>
+            <div class="subtitle" style="font-family: 'Fredoka', sans-serif;">Your cute health companion</div>
+        </div>
+
+        <!-- Cat Silhouette Bottom Left -->
+        <svg class="icon" style="bottom: 0; left: 80px; opacity: 0.9;" width="120" height="120" viewBox="0 0 24 24" fill="#8B5E3C">
+             <path d="M12 3C10 3 8 4 7 5.5L7 9H5L5 21H19L19 9H17L17 5.5C16 4 14 3 12 3Z" fill="none" /> 
+             <!-- Simple cat face outline -->
+             <path d="M12 5C10.5 5 9.2 5.6 8.5 6.5L8 9H16L15.5 6.5C14.8 5.6 13.5 5 12 5ZM9 11H15V13H9V11ZM10 14H14V15H10V14ZM6 21V10H8V21H6ZM16 21V10H18V21H16Z" fill="#8B5E3C"/>
+             <circle cx="10.5" cy="12" r="0.8" fill="#FFF9F0"/>
+             <circle cx="13.5" cy="12" r="0.8" fill="#FFF9F0"/>
+        </svg>
+
+    </div>
+
+    <div style="position: absolute; top: 10px; color: white; text-align: center;">
+        <p>Take a screenshot of the rectangle below (1024x500)</p>
+    </div>
+</body>
+</html>

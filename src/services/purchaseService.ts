@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import Purchases, {
   PurchasesOffering,
   PurchasesPackage,
@@ -6,25 +7,32 @@ import Purchases, {
 } from 'react-native-purchases';
 import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
 
-// Single API key — works for both platforms in test mode.
-// For production, use platform-specific keys via Platform.OS check.
-const REVENUECAT_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY ?? '';
+// Platform-specific API keys from .env
+const API_Keys = {
+  ios: process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY ?? '',
+  android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY ?? '',
+};
 
 // The entitlement identifier configured in RevenueCat dashboard
-const ENTITLEMENT_ID = 'kwaii Pro';
+// IMPORTANT: Create an entitlement in RevenueCat named 'kwaii_pro'
+const ENTITLEMENT_ID = 'kwaii_pro';
 
 class PurchaseServiceClass {
   private initialized = false;
 
   /**
    * Initialize RevenueCat SDK. Call once on app start.
-   * In Expo Go, the SDK auto-detects the environment and uses Preview API Mode.
    */
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    if (!REVENUECAT_API_KEY) {
-      if (__DEV__) console.warn('RevenueCat API key not set, skipping initialization');
+    const apiKey = Platform.select({
+      ios: API_Keys.ios,
+      android: API_Keys.android,
+    });
+
+    if (!apiKey) {
+      if (__DEV__) console.warn(`RevenueCat API key not set for ${Platform.OS}, skipping initialization`);
       return;
     }
 
@@ -33,7 +41,7 @@ class PurchaseServiceClass {
         Purchases.setLogLevel(LOG_LEVEL.DEBUG);
       }
 
-      Purchases.configure({ apiKey: REVENUECAT_API_KEY });
+      Purchases.configure({ apiKey });
       this.initialized = true;
       if (__DEV__) console.log('RevenueCat initialized successfully');
     } catch (error) {
@@ -60,7 +68,7 @@ class PurchaseServiceClass {
   }
 
   /**
-   * Check if the user currently has the kwaii Pro entitlement.
+   * Check if the user currently has the kwaii_pro entitlement.
    */
   async checkPremiumStatus(): Promise<boolean> {
     try {
@@ -101,21 +109,23 @@ class PurchaseServiceClass {
    * Returns true if a purchase or restore was made.
    */
   async presentPaywall(): Promise<boolean> {
-    const result: PAYWALL_RESULT = await RevenueCatUI.presentPaywall();
-    switch (result) {
-      case PAYWALL_RESULT.PURCHASED:
-      case PAYWALL_RESULT.RESTORED:
-        return true;
-      case PAYWALL_RESULT.NOT_PRESENTED:
-      case PAYWALL_RESULT.ERROR:
-      case PAYWALL_RESULT.CANCELLED:
-      default:
-        return false;
+    try {
+      const result: PAYWALL_RESULT = await RevenueCatUI.presentPaywall();
+      switch (result) {
+        case PAYWALL_RESULT.PURCHASED:
+        case PAYWALL_RESULT.RESTORED:
+          return true;
+        default:
+          return false;
+      }
+    } catch (error) {
+       if (__DEV__) console.warn('Error presenting paywall:', error);
+       return false;
     }
   }
 
   /**
-   * Present the paywall only if the user does NOT have the kwaii Pro entitlement.
+   * Present the paywall only if the user does NOT have the entitlement.
    * Returns true if a purchase or restore was made.
    */
   async presentPaywallIfNeeded(): Promise<boolean> {
@@ -187,7 +197,7 @@ class PurchaseServiceClass {
   }
 
   /**
-   * Check if CustomerInfo has the kwaii Pro entitlement.
+   * Check if CustomerInfo has the kwaii_pro entitlement.
    */
   private hasPremium(customerInfo: CustomerInfo): boolean {
     return (
