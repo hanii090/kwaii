@@ -129,7 +129,7 @@ export default function SettingsScreen() {
   const handleClearData = () => {
     Alert.alert(
       '⚠️ Clear ALL Data?',
-      'This will permanently delete everything — your profile, cat, medications, and all progress. You will be taken back to onboarding.',
+      'This will permanently delete everything — your profile, cat, pills, and all progress. You will be taken back to onboarding.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -240,7 +240,7 @@ export default function SettingsScreen() {
           <View style={styles.divider} />
           <View style={styles.row}>
             <ChartIcon size={20} />
-            <Text style={styles.rowLabel}>Lifetime Meds Taken</Text>
+            <Text style={styles.rowLabel}>Lifetime Pills Taken</Text>
             <Text style={styles.rowValue}>{totalMedsTaken}</Text>
           </View>
           <View style={styles.divider} />
@@ -280,7 +280,7 @@ export default function SettingsScreen() {
           <View style={styles.divider} />
           <View style={styles.row}>
             <MedPillIcon size={20} />
-            <Text style={styles.rowLabel}>Medication Reminders</Text>
+            <Text style={styles.rowLabel}>Pill Reminders</Text>
             <Switch
               value={notifPrefs.medicationReminders}
               onValueChange={(v) => setNotifPreference('medicationReminders', v)}
@@ -434,7 +434,7 @@ export default function SettingsScreen() {
 
         </Animated.View>
 
-        <Text style={styles.footer}>Made with love by Kawaii Meds</Text>
+        <Text style={styles.footer}>Made with love by Kawaii Pills</Text>
         <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>

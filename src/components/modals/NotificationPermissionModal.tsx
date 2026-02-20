@@ -53,7 +53,7 @@ export default function NotificationPermissionModal({
           </Text>
 
           <View style={styles.benefits}>
-            <BenefitRow icon={<MedPillIcon size={20} />} text="Medication reminders" />
+            <BenefitRow icon={<MedPillIcon size={20} />} text="Pill reminders" />
             <BenefitRow icon={<CelebrationIcon size={20} />} text="Celebration alerts" />
             <BenefitRow icon={<StreakFlameIcon size={20} />} text="Streak milestones" />
             <BenefitRow icon={<ChartIcon size={20} />} text="Daily summaries" />

@@ -122,7 +122,7 @@ export default function CalendarScreen() {
             {selectedStatus ? (
               <View>
                 <Text style={styles.detailSummary}>
-                  {selectedStatus.taken}/{selectedStatus.total} medications taken
+                  {selectedStatus.taken}/{selectedStatus.total} pills taken
                 </Text>
                 {(() => {
                   const today = format(new Date(), 'yyyy-MM-dd');
@@ -153,7 +153,7 @@ export default function CalendarScreen() {
                 })()}
               </View>
             ) : (
-              <Text style={styles.detailEmpty}>No medications scheduled.</Text>
+              <Text style={styles.detailEmpty}>No pills scheduled.</Text>
             )}
           </View>
         )}

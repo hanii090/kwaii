@@ -47,7 +47,7 @@ function AnimatedSubmitButton({ canSubmit, onPress }: { canSubmit: boolean; onPr
       disabled={!canSubmit}
     >
       <Animated.View style={[styles.addButton, !canSubmit && styles.addButtonDisabled, { transform: [{ scale }] }]}>
-        <Text style={styles.addButtonText}>Add Medication</Text>
+        <Text style={styles.addButtonText}>Add Pill</Text>
       </Animated.View>
     </TouchableOpacity>
   );
@@ -159,7 +159,7 @@ export default function AddMedicationScreen() {
             <View style={styles.pillIcon}>
               <MedPillIcon size={22} />
             </View>
-            <Text style={styles.headerTitle}>Add Medication</Text>
+            <Text style={styles.headerTitle}>Add Pill</Text>
           </View>
           <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
             <X size={20} color={Colors.secondary} strokeWidth={2.5} />
@@ -173,7 +173,7 @@ export default function AddMedicationScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* Medication Details */}
-          <Text style={styles.sectionLabel}>MEDICATION DETAILS</Text>
+          <Text style={styles.sectionLabel}>PILL DETAILS</Text>
 
           <Text style={styles.fieldLabel}>
             Name <Text style={styles.required}>*</Text>

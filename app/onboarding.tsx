@@ -30,7 +30,7 @@ const SLIDES: SlideData[] = [
   {
     id: '1',
     Illustration: CatWithClockIllustration,
-    subtitle: 'Welcome to Kawaii Meds',
+    subtitle: 'Welcome to Kawaii Pills',
     title: 'Never Miss a\nDose Again',
     description: 'Smart, gentle reminders that keep you on track — because your health matters.',
   },
@@ -39,21 +39,21 @@ const SLIDES: SlideData[] = [
     Illustration: CatWithListIllustration,
     subtitle: 'Simple & Fast',
     title: 'Quick & Easy\nSetup',
-    description: 'Add your medications in seconds. We handle the scheduling, you just tap when done.',
+    description: 'Add your pills in seconds. We handle the scheduling, you just tap when done.',
   },
   {
     id: '3',
     Illustration: CatShowcaseIllustration,
     subtitle: 'Your Companions',
     title: 'Collect Kawaii\nCats!',
-    description: 'Earn coins by taking your meds and unlock adorable cat companions in the shop!',
+    description: 'Earn coins by taking your pills and unlock adorable cat companions in the shop!',
   },
   {
     id: '4',
     Illustration: CatWithBellIllustration,
     subtitle: 'Stay on Track',
     title: 'Turn On\nReminders',
-    description: 'Allow notifications so we can gently remind you when it\'s time for your medication.',
+    description: 'Allow notifications so we can gently remind you when it\'s time for your pills.',
   },
 ];
 
@@ -116,7 +116,7 @@ export default function OnboardingScreen() {
         // OS won't show prompt again — direct user to Settings
         Alert.alert(
           'Notifications Disabled',
-          'You previously denied notifications. Please enable them in your device Settings to get medication reminders.',
+          'You previously denied notifications. Please enable them in your device Settings to get pill reminders.',
           [
             { text: 'Not Now', style: 'cancel' },
             {

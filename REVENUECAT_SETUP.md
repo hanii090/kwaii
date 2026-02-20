@@ -6,7 +6,7 @@ This guide details how to configure RevenueCat, the App Store, and Google Play C
 
 1. **Create Project:**
    * Go to [RevenueCat Dashboard](https://app.revenuecat.com/).
-   * Create a new project named "Kawaii Meds".
+   * Create a new project named "Kawaii Pills".
 
 2. **Add Your Apps:**
    * **iOS:**
@@ -46,7 +46,7 @@ This guide details how to configure RevenueCat, the App Store, and Google Play C
 
 ### App Store Connect (iOS)
 
-1. Go to **App Store Connect** -> **My Apps** -> **Kawaii Meds**.
+1. Go to **App Store Connect** -> **My Apps** -> **Kawaii Pills**.
 2. Go to **Monetization** -> **In-App Purchases**.
 3. Click **(+)** to add a new IAP.
 4. **Type:** Non-Consumable (for lifetime) or Auto-Renewable Subscription.
@@ -58,7 +58,7 @@ This guide details how to configure RevenueCat, the App Store, and Google Play C
 
 ### Google Play Console (Android)
 
-1. Go to **Google Play Console** -> **Kawaii Meds**.
+1. Go to **Google Play Console** -> **Kawaii Pills**.
 2. Go to **Monetize** -> **Products** -> **In-app products**.
 3. Click **Create product**.
 4. **Product ID:** `kawaii_premium_lifetime`.

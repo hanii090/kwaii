@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Kawaii Meds",
+    "name": "Kawaii Pills",
     "slug": "kiwaii",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FFF9F0"
+      "backgroundColor": "#F4A261"
     },
     "ios": {
       "supportsTablet": true,

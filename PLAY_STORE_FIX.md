@@ -5,7 +5,7 @@ Your app was rejected because Google thinks it's a **Medical** app, which requir
 ## Step 1: Change App Category
 
 1. Open [Google Play Console](https://play.google.com/console)
-2. Select your app **Kawaii Meds**
+2. Select your app **Kawaii Pills**
 3. Go to **Grow** → **Store presence** → **Main store listing** (or **Store settings**)
 4. Find **App category**
 5. Change it to:
@@ -89,8 +89,8 @@ Then go to **Store presence** → **Main store listing**:
 
 Go to **Grow** → **Store presence** → **Main store listing** and verify:
 
-- **App name:** Kawaii Meds
-- **Short description:** Your adorable medication reminder with a virtual pet companion
+- **App name:** Kawaii Pills
+- **Short description:** Your adorable pill reminder with a virtual pet companion
 - **Full description:** (your existing description)
 - **App icon:** uploaded
 - **Feature graphic:** uploaded (1024x500)

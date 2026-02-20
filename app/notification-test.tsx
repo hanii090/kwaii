@@ -55,7 +55,7 @@ export default function NotificationTestScreen() {
         new Date().getHours(),
         new Date().getMinutes() + 1 > 59 ? 0 : new Date().getMinutes() + 1
       );
-      addLog(`Scheduled medication reminder: ${id.slice(0, 8)}...`);
+      addLog(`Scheduled pill reminder: ${id.slice(0, 8)}...`);
     } catch (e: any) {
       addLog(`Error: ${e.message}`);
     }
@@ -67,7 +67,7 @@ export default function NotificationTestScreen() {
       const id = await Notifications.scheduleNotificationAsync({
         content: {
           title: 'Test Notification',
-          body: 'This is a test notification from Kawaii Meds!',
+          body: 'This is a test notification from Kawaii Pills!',
           data: { type: 'test' },
         },
         trigger: {
@@ -96,7 +96,7 @@ export default function NotificationTestScreen() {
       await Notifications.scheduleNotificationAsync({
         content: {
           title: '7 Day Streak!',
-          body: "Amazing! You've built a 7-day medication habit!",
+          body: "Amazing! You've built a 7-day pill habit!",
           data: { type: 'streak_milestone', days: 7 },
         },
         trigger: null,
@@ -122,7 +122,7 @@ export default function NotificationTestScreen() {
       await Notifications.scheduleNotificationAsync({
         content: {
           title: 'We miss you!',
-          body: 'Your cat is getting sleepy. Come back and take your meds!',
+          body: 'Your cat is getting sleepy. Come back and take your pills!',
           data: { type: 'encouragement' },
         },
         trigger: null,
@@ -221,7 +221,7 @@ export default function NotificationTestScreen() {
         {/* Send Notifications */}
         <Text style={styles.sectionLabel}>SEND NOTIFICATIONS</Text>
         <View style={styles.buttonGroup}>
-          <TestButton label="Medication Reminder (+1 min)" icon={<MedPillIcon size={18} />} onPress={handleSendMedicationReminder} />
+          <TestButton label="Pill Reminder (+1 min)" icon={<MedPillIcon size={18} />} onPress={handleSendMedicationReminder} />
           <TestButton label="Test in 10 Seconds" icon={<StarIcon size={18} />} onPress={handleSendIn10Seconds} />
           <TestButton label="Celebration" icon={<CelebrationIcon size={18} />} onPress={handleSendCelebration} />
           <TestButton label="Streak Milestone" icon={<StreakFlameIcon size={18} />} onPress={handleSendStreak} />

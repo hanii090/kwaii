@@ -1,6 +1,6 @@
-# Notification System - Kawaii Meds
+# Notification System - Kawaii Pills
 
-Complete notification system for medication reminders, celebrations, and engagement.
+Complete notification system for pill reminders, celebrations, and engagement.
 
 ---
 
@@ -18,7 +18,7 @@ app/notification-test.tsx             — Dev testing screen
 
 | Type | Trigger | Channel (Android) | Priority |
 |------|---------|-------------------|----------|
-| **Medication Reminder** | Scheduled daily at user-set times | `medication-reminders` | HIGH |
+| **Pill Reminder** | Scheduled daily at user-set times | `medication-reminders` | HIGH |
 | **Missed Warning** | 30 min after scheduled time | `encouragement` | LOW |
 | **Celebration** | Medication marked as taken | `celebrations` | DEFAULT |
 | **Streak Milestone** | Streak hits 3, 7, 14, 30, 60, 90, 180, 365 | `celebrations` | DEFAULT |
@@ -28,8 +28,8 @@ app/notification-test.tsx             — Dev testing screen
 
 ## Quick Actions (from notification)
 
-Medication reminders include three action buttons:
-- **Mark as Taken** — marks the medication, awards XP/coins
+Pill reminders include three action buttons:
+- **Mark as Taken** — marks the pill, awards XP/coins
 - **Snooze 10 min** — reschedules the reminder
 - **Skip** — dismisses silently
 
@@ -49,7 +49,7 @@ All preferences are persisted in AsyncStorage under `@kawaii_notification_prefs`
 | Preference | Default | Description |
 |-----------|---------|-------------|
 | `masterEnabled` | `true` | Kill switch for all notifications |
-| `medicationReminders` | `true` | Daily medication reminders |
+| `medicationReminders` | `true` | Daily pill reminders |
 | `celebrations` | `true` | "Great job!" on med taken |
 | `streakMilestones` | `true` | Streak milestone alerts |
 | `encouragement` | `true` | "We miss you" after 48h inactivity |

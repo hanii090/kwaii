@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, ActivityIndicator, StyleSheet, AppState } from 'react-native';
+import { View, StyleSheet, AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCatStore } from '../src/stores/catStore';
 import { useMedicationStore } from '../src/stores/medicationStore';
@@ -12,6 +12,7 @@ import NotificationPermissionModal from '../src/components/modals/NotificationPe
 import { Colors } from '../src/constants/theme';
 import { usePremiumStore } from '../src/stores/premiumStore';
 import ErrorBoundary from '../src/components/ErrorBoundary';
+import SplashScreen from '../src/components/SplashScreen';
 
 const NOTIF_PROMPTED_KEY = '@kawaii_notif_prompted';
 
@@ -20,6 +21,7 @@ export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
   const [hasOnboarded, setHasOnboarded] = useState(false);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     const init = async () => {
@@ -104,14 +106,17 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, []);
 
+  // Only navigate AFTER splash is dismissed — calling router.replace while
+  // the Stack isn't rendered causes the component tree to churn and remount
+  // the SplashScreen, resetting its animations in a loop.
   useEffect(() => {
-    if (!isReady) return;
+    if (!isReady || showSplash) return;
     if (!hasOnboarded) {
       router.replace('/onboarding');
     } else {
       router.replace('/(tabs)');
     }
-  }, [isReady, hasOnboarded]);
+  }, [isReady, showSplash, hasOnboarded]);
 
   const handleAllowNotifications = async () => {
     const granted = await NotificationService.requestPermissions();
@@ -125,11 +130,35 @@ export default function RootLayout() {
     setShowPermissionModal(false);
   };
 
-  if (!isReady) {
+  // When splash animation ends but app isn't ready yet, wait for isReady then dismiss
+  const splashDone = useRef(false);
+
+  useEffect(() => {
+    if (isReady && splashDone.current) {
+      setShowSplash(false);
+    }
+  }, [isReady]);
+
+  // Safety timeout — force dismiss splash after 4s no matter what
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setShowSplash(false);
+    }, 4000);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  const handleSplashFinish = () => {
+    splashDone.current = true;
+    if (isReady) {
+      setShowSplash(false);
+    }
+  };
+
+  if (!isReady || showSplash) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" color={Colors.warm} />
-        <StatusBar style="dark" />
+        <SplashScreen onFinish={handleSplashFinish} />
+        <StatusBar style="light" />
       </View>
     );
   }
@@ -184,6 +213,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.background,
+    backgroundColor: '#F4A261',
   },
 });

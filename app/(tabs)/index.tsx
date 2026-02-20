@@ -455,7 +455,7 @@ export default function HomeScreen() {
 
         {/* Today's Medicine */}
         <Animated.View style={[styles.medsSection, sectionAnims[2]]}>
-          <Text style={styles.sectionTitle}>Today's Medicine</Text>
+          <Text style={styles.sectionTitle}>Today's Pills</Text>
           <Text style={styles.dateSubtitle}>{dateStr}</Text>
 
           {medications.length === 0 ? (
@@ -463,9 +463,9 @@ export default function HomeScreen() {
               <View style={styles.emptyIconCircle}>
                 <MedPillIcon size={28} />
               </View>
-              <Text style={styles.emptyTitle}>No medications yet</Text>
+              <Text style={styles.emptyTitle}>No pills yet</Text>
               <Text style={styles.emptyText}>
-                Add your first medication and we'll sort it under Morning and
+                Add your first pill and we'll sort it under Morning and
                 Night for you.
               </Text>
               <TouchableOpacity
@@ -474,13 +474,13 @@ export default function HomeScreen() {
                 activeOpacity={0.8}
               >
                 <Plus size={18} color={Colors.white} strokeWidth={3} />
-                <Text style={styles.addButtonText}>Add Medication</Text>
+                <Text style={styles.addButtonText}>Add Pill</Text>
               </TouchableOpacity>
             </View>
           ) : totalCount === 0 ? (
             <View style={styles.emptyState}>
               <MoonIcon size={28} />
-              <Text style={styles.emptyTitle}>No meds scheduled today</Text>
+              <Text style={styles.emptyTitle}>No pills scheduled today</Text>
               <Text style={styles.emptyText}>Enjoy your day off!</Text>
             </View>
           ) : (
@@ -516,7 +516,7 @@ export default function HomeScreen() {
                 <View style={styles.allDoneCard}>
                   <CelebrationIcon size={28} />
                   <Text style={styles.allDoneTitle}>All done for today!</Text>
-                  <Text style={styles.allDoneText}>Great job taking all your medications.</Text>
+                  <Text style={styles.allDoneText}>Great job taking all your pills.</Text>
                 </View>
               )}
 

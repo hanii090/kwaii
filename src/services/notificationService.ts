@@ -66,7 +66,7 @@ export class NotificationService {
   static async setupNotificationChannels(): Promise<void> {
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('medication-reminders', {
-        name: 'Medication Reminders',
+        name: 'Pill Reminders',
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: Colors.primary,
@@ -169,7 +169,7 @@ export class NotificationService {
   ): Promise<string> {
     const notificationId = await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'Time for your medicine! 💊',
+        title: 'Time for your pill! 💊',
         body: `Don't forget to take ${dosage} of ${medicationName}`,
         data: {
           medicationId,
@@ -283,7 +283,7 @@ export class NotificationService {
     const notificationId = await Notifications.scheduleNotificationAsync({
       content: {
         title: "Today's Summary 📊",
-        body: 'Tap to see your medication stats for today',
+        body: 'Tap to see your pill stats for today',
         data: {
           type: 'daily_summary' as NotificationType,
           screen: 'Calendar',
@@ -332,7 +332,7 @@ export class NotificationService {
     await Notifications.scheduleNotificationAsync({
       content: {
         title: `🔥 ${streakDays} Day Streak!`,
-        body: `Amazing! You've built a ${streakDays}-day medication habit!`,
+        body: `Amazing! You've built a ${streakDays}-day pill habit!`,
         data: {
           type: 'streak_milestone' as NotificationType,
           days: streakDays,
@@ -386,7 +386,7 @@ export class NotificationService {
     await Notifications.scheduleNotificationAsync({
       content: {
         title: 'We miss you! 😿',
-        body: 'Your cat is getting sleepy. Come back and take your meds!',
+        body: 'Your cat is getting sleepy. Come back and take your pills!',
         data: {
           type: 'encouragement' as NotificationType,
           screen: 'Home',
@@ -412,7 +412,7 @@ export class NotificationService {
   ): Promise<void> {
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'Medication reminder ⏰',
+        title: 'Pill reminder ⏰',
         body: medicationName
           ? `Snoozed reminder for ${medicationName}`
           : 'You snoozed this reminder 10 minutes ago',
