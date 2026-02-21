@@ -42,6 +42,14 @@
           "sounds": [],
           "enableBackgroundRemoteNotifications": false
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#F4A261"
+        }
       ]
     ],
     "extra": {

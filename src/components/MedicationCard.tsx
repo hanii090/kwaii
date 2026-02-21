@@ -10,20 +10,20 @@ import {
 } from 'react-native';
 import { Check, Clock } from 'lucide-react-native';
 import { Medication } from '../stores/medicationStore';
-import { Colors, Spacing, BorderRadius, Shadows } from '../constants/theme';
+import { Colors, Shadows } from '../constants/theme';
 import { getMedicationIcon } from './icons/KawaiiIcons';
 
-// Softer palette keyed off the card's user-chosen color
-const ACCENT_MAP: Record<string, { bg: string; text: string; strip: string }> = {
-  '#FFF3D6': { bg: '#FFF8E8', text: '#B8860B', strip: '#F4C430' },  // gold
-  '#FFE4E1': { bg: '#FFF0EE', text: '#C0392B', strip: '#E57373' },  // rose
-  '#E8F5E9': { bg: '#F0FAF0', text: '#388E3C', strip: '#81C784' },  // mint
-  '#E3F2FD': { bg: '#EEF6FF', text: '#1565C0', strip: '#64B5F6' },  // sky
-  '#F3E5F5': { bg: '#F9F0FB', text: '#7B1FA2', strip: '#BA68C8' },  // lilac
-  '#FFF9F0': { bg: '#FFFAF4', text: '#8B5E3C', strip: '#F4A261' },  // warm
-  '#FFF5E6': { bg: '#FFF8F0', text: '#A67C52', strip: '#E8A87C' },  // peach
+// Refined accent palette — one tint color per medication color, Apple HIG-inspired
+const ACCENT_MAP: Record<string, { tint: string; bg: string }> = {
+  '#FFF3D6': { tint: '#E8A440', bg: '#FEF5E7' },  // amber
+  '#FFE4E1': { tint: '#E8636B', bg: '#FFF0EE' },  // coral
+  '#E8F5E9': { tint: '#5ABE6E', bg: '#EFF8F0' },  // green
+  '#E3F2FD': { tint: '#5B9FE8', bg: '#EDF5FC' },  // blue
+  '#F3E5F5': { tint: '#A66BBF', bg: '#F6EEFA' },  // purple
+  '#FFF9F0': { tint: '#D4895C', bg: '#FFF6EE' },  // warm
+  '#FFF5E6': { tint: '#D4895C', bg: '#FFF6EE' },  // peach
 };
-const DEFAULT_ACCENT = { bg: '#FFF8F0', text: '#A67C52', strip: '#E8A87C' };
+const DEFAULT_ACCENT = { tint: '#D4895C', bg: '#FFF6EE' };
 
 function getAccent(color?: string) {
   if (!color) return DEFAULT_ACCENT;
@@ -43,33 +43,31 @@ export default function MedicationCard({
 }: MedicationCardProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const checkScale = useRef(new Animated.Value(medication.taken ? 1 : 0)).current;
-  const checkRotate = useRef(new Animated.Value(medication.taken ? 0 : -0.3)).current;
-  const takenFade = useRef(new Animated.Value(medication.taken ? 1 : 0)).current;
-  const stripWidth = useRef(new Animated.Value(medication.taken ? 6 : 4)).current;
+  const checkOpacity = useRef(new Animated.Value(medication.taken ? 1 : 0)).current;
+  const takenBg = useRef(new Animated.Value(medication.taken ? 1 : 0)).current;
 
   const accent = getAccent(medication.color);
+  const MedIcon = getMedicationIcon(medication.icon || 'pill');
 
   useEffect(() => {
     if (medication.taken) {
       Animated.parallel([
-        Animated.timing(checkScale, { toValue: 1, duration: 300, easing: Easing.out(Easing.back(1.8)), useNativeDriver: true }),
-        Animated.timing(checkRotate, { toValue: 0, duration: 300, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-        Animated.timing(takenFade, { toValue: 1, duration: 250, useNativeDriver: false }),
-        Animated.timing(stripWidth, { toValue: 6, duration: 250, useNativeDriver: false }),
+        Animated.spring(checkScale, { toValue: 1, speed: 16, bounciness: 12, useNativeDriver: true }),
+        Animated.timing(checkOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+        Animated.timing(takenBg, { toValue: 1, duration: 300, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
       ]).start();
     } else {
       checkScale.setValue(0);
-      checkRotate.setValue(-0.3);
-      takenFade.setValue(0);
-      stripWidth.setValue(4);
+      checkOpacity.setValue(0);
+      takenBg.setValue(0);
     }
   }, [medication.taken]);
 
   const handlePress = () => {
     if (medication.taken) return;
     Animated.sequence([
-      Animated.timing(scaleAnim, { toValue: 0.96, duration: 80, useNativeDriver: true }),
-      Animated.timing(scaleAnim, { toValue: 1, duration: 200, easing: Easing.out(Easing.back(1.5)), useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 0.97, duration: 60, useNativeDriver: true }),
+      Animated.spring(scaleAnim, { toValue: 1, speed: 50, bounciness: 6, useNativeDriver: true }),
     ]).start();
     onTakeMedication(medication.id);
   };
@@ -86,115 +84,88 @@ export default function MedicationCard({
     );
   };
 
-  const cardBgColor = takenFade.interpolate({
+  const cardBg = takenBg.interpolate({
     inputRange: [0, 1],
-    outputRange: [Colors.white, '#F4FAF4'],
+    outputRange: ['#FFFFFF', '#F8FAF8'],
   });
-
-  const checkRotateDeg = checkRotate.interpolate({
-    inputRange: [-0.3, 0],
-    outputRange: ['-15deg', '0deg'],
-  });
-
-  const MedIcon = getMedicationIcon(medication.icon || 'pill');
 
   return (
     <Animated.View style={[styles.cardOuter, { transform: [{ scale: scaleAnim }] }]}>
       <TouchableOpacity
-        activeOpacity={0.7}
+        activeOpacity={1}
+        onPressIn={() => {
+          if (!medication.taken) {
+            Animated.spring(scaleAnim, { toValue: 0.97, speed: 50, bounciness: 4, useNativeDriver: true }).start();
+          }
+        }}
+        onPressOut={() => {
+          Animated.spring(scaleAnim, { toValue: 1, speed: 50, bounciness: 4, useNativeDriver: true }).start();
+        }}
         onPress={handlePress}
         onLongPress={handleLongPress}
         delayLongPress={500}
-        disabled={medication.taken}
         style={{ flex: 1 }}
       >
-        <Animated.View style={[styles.card, { backgroundColor: cardBgColor }]}>
-          {/* Color accent strip on the left */}
-          <Animated.View
-            style={[
-              styles.accentStrip,
-              {
-                backgroundColor: medication.taken ? Colors.success : accent.strip,
-                width: stripWidth,
-              },
-            ]}
-          />
-
-          {/* Icon */}
+        <Animated.View style={[styles.card, { backgroundColor: cardBg }]}>
+          {/* Icon bubble */}
           <View
             style={[
-              styles.iconContainer,
+              styles.iconWrap,
               {
-                backgroundColor: medication.taken ? '#E8F5E9' : accent.bg,
-                borderColor: medication.taken ? '#C8E6C9' : 'transparent',
-                borderWidth: medication.taken ? 1 : 0,
+                backgroundColor: medication.taken ? '#EEF5EE' : accent.bg,
               },
             ]}
           >
             <MedIcon size={22} />
           </View>
 
-          {/* Middle: name, dosage chip, time */}
-          <View style={styles.info}>
+          {/* Content */}
+          <View style={styles.content}>
             <Text
-              style={[
-                styles.name,
-                medication.taken && styles.nameTaken,
-              ]}
+              style={[styles.name, medication.taken && styles.nameDone]}
               numberOfLines={1}
             >
               {medication.name}
             </Text>
 
-            <View style={styles.metaRow}>
-              {/* Dosage chip */}
-              <View style={[styles.dosageChip, medication.taken && styles.dosageChipTaken]}>
-                <Text
-                  style={[styles.dosageText, medication.taken && styles.dosageTextTaken]}
-                  numberOfLines={1}
-                >
-                  {medication.dosage}
-                </Text>
-              </View>
-
-              {/* Time */}
-              <View style={styles.timeRow}>
-                <Clock
-                  size={11}
-                  color={medication.taken ? '#9E9E9E' : Colors.lightText}
-                  strokeWidth={2}
-                />
-                <Text style={[styles.time, medication.taken && styles.timeTaken]}>
-                  {medication.scheduledTime}
-                </Text>
-              </View>
+            <View style={styles.meta}>
+              <Text
+                style={[styles.dosage, medication.taken && styles.metaDone]}
+                numberOfLines={1}
+              >
+                {medication.dosage}
+              </Text>
+              <View style={styles.dot} />
+              <Clock
+                size={11}
+                color={medication.taken ? '#C7C7CC' : '#AAAAAA'}
+                strokeWidth={2}
+              />
+              <Text style={[styles.time, medication.taken && styles.metaDone]}>
+                {medication.scheduledTime}
+              </Text>
             </View>
           </View>
 
-          {/* Checkbox */}
-          <View style={styles.checkboxArea}>
-            <View
-              style={[
-                styles.checkbox,
-                medication.taken && styles.checkboxTaken,
-                !medication.taken && { borderColor: accent.strip },
-              ]}
-            >
-              {medication.taken && (
-                <Animated.View
-                  style={{
-                    transform: [
-                      { scale: checkScale },
-                      { rotate: checkRotateDeg },
-                    ],
-                  }}
-                >
-                  <Check size={16} color={Colors.white} strokeWidth={3} />
-                </Animated.View>
-              )}
-            </View>
-            {medication.taken && (
-              <Text style={styles.doneLabel}>Done</Text>
+          {/* Action — check button */}
+          <View style={styles.actionArea}>
+            {medication.taken ? (
+              <Animated.View
+                style={[
+                  styles.checkBtn,
+                  styles.checkBtnDone,
+                  {
+                    opacity: checkOpacity,
+                    transform: [{ scale: checkScale }],
+                  },
+                ]}
+              >
+                <Check size={16} color="#FFFFFF" strokeWidth={3} />
+              </Animated.View>
+            ) : (
+              <View style={[styles.checkBtn, { borderColor: accent.tint }]}>
+                <View style={[styles.checkInner, { backgroundColor: accent.tint + '12' }]} />
+              </View>
             )}
           </View>
         </Animated.View>
@@ -205,113 +176,96 @@ export default function MedicationCard({
 
 const styles = StyleSheet.create({
   cardOuter: {
-    marginBottom: 10,
-    borderRadius: 18,
-    ...Shadows.medium,
+    marginBottom: 8,
+    borderRadius: 16,
+    // Apple-style subtle shadow
+    shadowColor: '#8B7355',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: 16,
     paddingVertical: 14,
-    paddingRight: 14,
-    paddingLeft: 0,
-    overflow: 'hidden',
-    minHeight: 76,
+    paddingHorizontal: 14,
+    minHeight: 68,
   },
-  accentStrip: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    borderTopLeftRadius: 18,
-    borderBottomLeftRadius: 18,
-  },
-  iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+  iconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 16,
-    marginRight: 12,
   },
-  info: {
+  content: {
     flex: 1,
+    marginLeft: 12,
+    marginRight: 12,
     justifyContent: 'center',
-    gap: 4,
   },
   name: {
     fontSize: 16,
-    fontWeight: '700',
-    color: Colors.primary,
-    letterSpacing: -0.2,
-  },
-  nameTaken: {
-    color: '#9E9E9E',
-    textDecorationLine: 'line-through',
-    textDecorationColor: '#BDBDBD',
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  dosageChip: {
-    backgroundColor: '#F5EDE3',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  dosageChipTaken: {
-    backgroundColor: '#E8F5E9',
-  },
-  dosageText: {
-    fontSize: 12,
     fontWeight: '600',
-    color: Colors.secondary,
+    color: '#1C1C1E',
+    letterSpacing: -0.3,
+    marginBottom: 2,
   },
-  dosageTextTaken: {
-    color: '#81C784',
+  nameDone: {
+    color: '#AEAEB2',
+    textDecorationLine: 'line-through',
+    textDecorationColor: '#D1D1D6',
   },
-  timeRow: {
+  meta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
+  },
+  dosage: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#8E8E93',
+    letterSpacing: -0.1,
+  },
+  dot: {
+    width: 2.5,
+    height: 2.5,
+    borderRadius: 1.25,
+    backgroundColor: '#D1D1D6',
+    marginHorizontal: 4,
   },
   time: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: Colors.lightText,
+    fontSize: 13,
+    fontWeight: '400',
+    color: '#8E8E93',
+    letterSpacing: -0.1,
+    marginLeft: 2,
   },
-  timeTaken: {
-    color: '#BDBDBD',
+  metaDone: {
+    color: '#C7C7CC',
   },
-  checkboxArea: {
+  actionArea: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 10,
-    gap: 3,
   },
-  checkbox: {
-    width: 34,
-    height: 34,
-    borderRadius: 11,
-    borderWidth: 2.5,
-    borderColor: Colors.border,
+  checkBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.white,
+    overflow: 'hidden',
   },
-  checkboxTaken: {
-    backgroundColor: Colors.success,
-    borderColor: Colors.success,
+  checkInner: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 8,
   },
-  doneLabel: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: Colors.success,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
+  checkBtnDone: {
+    backgroundColor: '#4CAF78',
+    borderColor: '#4CAF78',
   },
 });

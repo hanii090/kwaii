@@ -6,6 +6,10 @@ import Purchases, {
   LOG_LEVEL,
 } from 'react-native-purchases';
 import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
+import ExpoConstants from 'expo-constants';
+
+// Detect Expo Go — native modules like RevenueCat don't work there
+const isExpoGo = ExpoConstants.appOwnership === 'expo';
 
 // Platform-specific API keys from .env
 const API_Keys = {
@@ -22,9 +26,15 @@ class PurchaseServiceClass {
 
   /**
    * Initialize RevenueCat SDK. Call once on app start.
+   * Skips initialization in Expo Go since native modules aren't available.
    */
   async initialize(): Promise<void> {
     if (this.initialized) return;
+
+    if (isExpoGo) {
+      if (__DEV__) console.log('[RevenueCat] Running in Expo Go — skipping native SDK init. Use a development build to test purchases.');
+      return;
+    }
 
     const apiKey = Platform.select({
       ios: API_Keys.ios,
@@ -32,7 +42,7 @@ class PurchaseServiceClass {
     });
 
     if (!apiKey) {
-      if (__DEV__) console.warn(`RevenueCat API key not set for ${Platform.OS}, skipping initialization`);
+      console.warn(`[RevenueCat] API key not set for ${Platform.OS}, skipping initialization. Purchases will not work.`);
       return;
     }
 
@@ -45,7 +55,7 @@ class PurchaseServiceClass {
       this.initialized = true;
       if (__DEV__) console.log('RevenueCat initialized successfully');
     } catch (error) {
-      if (__DEV__) console.warn('RevenueCat init failed:', error);
+      console.warn('[RevenueCat] Initialization failed:', error);
     }
   }
 
@@ -109,6 +119,11 @@ class PurchaseServiceClass {
    * Returns true if a purchase or restore was made.
    */
   async presentPaywall(): Promise<boolean> {
+    if (!this.initialized) {
+      console.warn('[RevenueCat] SDK not initialized — cannot present paywall');
+      throw new Error('RevenueCat not initialized');
+    }
+
     try {
       const result: PAYWALL_RESULT = await RevenueCatUI.presentPaywall();
       switch (result) {
@@ -119,8 +134,8 @@ class PurchaseServiceClass {
           return false;
       }
     } catch (error) {
-       if (__DEV__) console.warn('Error presenting paywall:', error);
-       return false;
+      console.warn('[RevenueCat] Error presenting paywall:', error);
+      throw error; // Re-throw so premiumStore can show fallback paywall
     }
   }
 

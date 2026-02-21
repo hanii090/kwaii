@@ -3,6 +3,7 @@ import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, StyleSheet, AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ExpoSplashScreen from 'expo-splash-screen';
 import { useCatStore } from '../src/stores/catStore';
 import { useMedicationStore } from '../src/stores/medicationStore';
 import { useNotificationStore } from '../src/stores/notificationStore';
@@ -14,6 +15,9 @@ import { usePremiumStore } from '../src/stores/premiumStore';
 import ErrorBoundary from '../src/components/ErrorBoundary';
 import SplashScreen from '../src/components/SplashScreen';
 
+// Hold the native splash screen until our JS splash is mounted and ready
+ExpoSplashScreen.preventAutoHideAsync().catch(() => {});
+
 const NOTIF_PROMPTED_KEY = '@kawaii_notif_prompted';
 
 export default function RootLayout() {
@@ -23,14 +27,34 @@ export default function RootLayout() {
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
 
+  // Hide the native splash once the JS splash component has mounted
+  const nativeSplashHidden = useRef(false);
+  const hideNativeSplash = () => {
+    if (!nativeSplashHidden.current) {
+      nativeSplashHidden.current = true;
+      ExpoSplashScreen.hideAsync().catch(() => {});
+    }
+  };
+
+  useEffect(() => {
+    // Hide native splash after a short delay to ensure JS splash is painted
+    const t = setTimeout(hideNativeSplash, 100);
+    return () => clearTimeout(t);
+  }, []);
+
   useEffect(() => {
     const init = async () => {
+      // --- Critical init (needed before splash dismissal) ---
       const completed = await loadOnboardingState();
       setHasOnboarded(completed);
 
       // Initialize RevenueCat and check premium status
       await usePremiumStore.getState().initialize();
 
+      // Mark ready so splash can dismiss
+      setIsReady(true);
+
+      // --- Non-critical init (can run after splash) ---
       // Load notification preferences
       await useNotificationStore.getState().loadPreferences();
 
@@ -83,9 +107,6 @@ export default function RootLayout() {
 
       // Check if we need to reset medications for a new day
       useMedicationStore.getState().checkAndResetIfNewDay();
-
-      // Mark ready AFTER all setup (fixes race condition with permission modal)
-      setIsReady(true);
     };
     init();
 

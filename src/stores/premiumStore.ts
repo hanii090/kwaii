@@ -65,8 +65,8 @@ export const usePremiumStore = create<PremiumStore>((set, get) => ({
       }
       return success;
     } catch {
-      // RevenueCat UI not available (e.g. Expo Go) — show fallback paywall only in dev
-      set({ isLoading: false, showFallbackPaywall: __DEV__ });
+      // RevenueCat UI not available — show fallback paywall so user still has purchase UI
+      set({ isLoading: false, showFallbackPaywall: true });
       return false;
     }
   },

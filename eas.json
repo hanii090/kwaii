@@ -6,13 +6,25 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "YOUR_IOS_API_KEY_HERE",
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY": "goog_ZlqwdpfEvMlLDRDhFtDuhFpMhTG"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "YOUR_IOS_API_KEY_HERE",
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY": "goog_ZlqwdpfEvMlLDRDhFtDuhFpMhTG"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "YOUR_IOS_API_KEY_HERE",
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY": "goog_ZlqwdpfEvMlLDRDhFtDuhFpMhTG"
+      }
     }
   },
   "submit": {
